@@ -13,6 +13,7 @@ N = 10
 x = np.linspace(0., 1., N)
 sigma = 0.2
 noise = np.random.standard_normal(N) * sigma
+
 y = line(x)
 data = np.transpose([x, y+noise])
 
@@ -20,17 +21,39 @@ data = np.transpose([x, y+noise])
 
 lsq = LeastSquares(data, line)
 
-## find best fit by brute force using a grid search
+# =============================================================================
+# ## find best fit by brute force using a grid search
+# 
+# n_grid = int(1e2)
+# 
+# intercept = np.linspace(-1., 1., n_grid)
+# slope = np.linspace(0., 2., n_grid)
+# grid = np.meshgrid(intercept, slope)
+# grid = np.reshape(grid, (2, -1)).T
+# 
+# costs = np.array([lsq(params) for params in grid])
+# params_best = grid[np.argmin(costs)]
+# 
+# line.params = params_best
+# =============================================================================
+
+## finding slope and intercept using algebra
+
+slope_num = N*np.sum(x*(y+noise)) - np.sum(x)*np.sum(y+noise)
+slope_den = N*np.sum(x*x) - np.sum(x)*np.sum(x)
+slope = slope_num/slope_den
+intercept = np.mean(y+noise) - slope*np.mean(x)
+params_best = [intercept, slope]
+
+
+# grid for cost function
 
 n_grid = int(1e2)
-
-intercept = np.linspace(-1., 1., n_grid)
-slope = np.linspace(0., 2., n_grid)
-grid = np.meshgrid(intercept, slope)
+intercept_axis = np.linspace(-1., 1., n_grid)
+slope_axis = np.linspace(0., 2., n_grid)
+grid = np.meshgrid(intercept_axis, slope_axis)
 grid = np.reshape(grid, (2, -1)).T
-
 costs = np.array([lsq(params) for params in grid])
-params_best = grid[np.argmin(costs)]
 
 line.params = params_best
 
@@ -47,9 +70,11 @@ ax.set_xlabel(r'$x_n$')
 ax.set_ylabel(r'$y_n$')
 ax.legend()
 ax = axes[1]
-ax.contour(intercept, slope, np.exp(-0.5*costs.reshape(n_grid, -1)))
+ax.contour(intercept_axis, slope_axis, np.exp(-0.5*costs.reshape(n_grid, -1)))
 ax.scatter(*params_best, s=100, color='r', alpha=0.5, label='best')
 ax.scatter(*params_true, s=100, color='k', marker='x', alpha=0.5, label='truth')
+
+
 ax.set_xlabel('intercept')
 ax.set_ylabel('slope')
 ax.legend()
