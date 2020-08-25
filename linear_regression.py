@@ -145,7 +145,7 @@ if __name__ == '__main__':
     y = par.get_output()
         
     params_poly = par.compute_params(x,y)
-    print("The regression coefficients are",params_poly)
+    print("The regression coefficients are", params_poly)
     
     data = np.concatenate([np.reshape(x[:,1],[len(x),-1]), np.reshape(y,[len(y),-1])], axis = 1)
         
@@ -164,19 +164,17 @@ if __name__ == '__main__':
 
     ax = axes[0]    
     ax.scatter(x[:,1], y, s=100, color='k', alpha=0.7)
-    ax.plot(x[:,1], poly(x[:,1]),color='k', label='true model')
-    ax.plot(x[:,1], line(x[:,1]),color='r', label='Best fit')
+    ax.plot(x[:,1], poly(x[:,1]),color='r', label='true model')
+    ax.plot(x[:,1], line(x[:,1]),color='k', label='Best fit')
     ax.set_xlabel(r'$x_n$')
     ax.set_ylabel(r'$y_n$')
     ax.legend()
     
     
-    # fit criteria
-    
+    # fit criteria    
     lsq = LeastSquares(data, line)
 
-    # grid for cost function
-    
+    # grid for cost function    
     n_grid = int(1e2)
     intercept_axis = np.linspace(-1., 1., n_grid)
     slope_axis = np.linspace(-1., 3., n_grid)
