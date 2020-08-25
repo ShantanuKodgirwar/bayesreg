@@ -9,7 +9,7 @@ line = StraightLine(params_true)
 
 ## generate some noisy data
 
-N = 10
+N = 11
 x = np.linspace(0., 1., N)
 sigma = 0.2
 noise = np.random.standard_normal(N) * sigma
@@ -20,22 +20,6 @@ data = np.transpose([x, y+noise])
 ## fit criterion
 
 lsq = LeastSquares(data, line)
-
-# =============================================================================
-# ## find best fit by brute force using a grid search
-# 
-# n_grid = int(1e2)
-# 
-# intercept = np.linspace(-1., 1., n_grid)
-# slope = np.linspace(0., 2., n_grid)
-# grid = np.meshgrid(intercept, slope)
-# grid = np.reshape(grid, (2, -1)).T
-# 
-# costs = np.array([lsq(params) for params in grid])
-# params_best = grid[np.argmin(costs)]
-# 
-# line.params = params_best
-# =============================================================================
 
 ## finding slope and intercept using algebra
 
@@ -55,7 +39,9 @@ grid = np.meshgrid(intercept_axis, slope_axis)
 grid = np.reshape(grid, (2, -1)).T
 costs = np.array([lsq(params) for params in grid])
 
-line.params = params_best
+#params_best = grid[np.argmin(costs)] # Minimizing the value from the grid
+
+line.params = params_best #Params_best value
 
 ## show true model and best fit
 plt.rc('lines', lw=3)
