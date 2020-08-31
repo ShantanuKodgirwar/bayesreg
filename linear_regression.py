@@ -41,6 +41,7 @@ class StraightLine(LinearModel):
 
 class PolyCurve(LinearModel):
     
+## MH-08-31-20: 'M' is redundant since M=len(params)-1 ...
     def __init__(self, params, M):
         
         super().__init__(params)
@@ -55,6 +56,18 @@ class PolyCurve(LinearModel):
         
         return np.polyval(self._params[::-1], x)
 
+## MH-08-31-20: my suggestions for the following class are
+## - separate noise model (Gaussian) from forward model
+## - class name 'ComputeParameters' suggests that this is a very general
+##   class, whereas in fact it mainly evaluates the design matrix for
+##   the polynomial basis functions
+## - assumes that input 'x' is always [0, 1] evenly sampled
+## - seems to be an example of a 'god object' since it does several things:
+##   evaluating the design matrix, adding the noise, computing the least-
+##   squares estimator => better separate this functionality into different
+##   objects or make it part of LinearModel (evaluating the design matrix
+##   could be done by LinearModel...)
+##
 class ComputeParameters:
     """
     Class that provides the input (design matrix), output
@@ -70,13 +83,18 @@ class ComputeParameters:
         
         # Forming the design matrix X
         
+## MH-08-31-20: x domain is harded-code here...
         return np.power.outer(np.linspace(0., 1., self._N), range(self._M+1))
 
     def get_output(self):
+## MH-08-31-20: can't work because ComputeParameters doesn't know anything about
+## the parameters
         
         # creating a response vector y
         
         noise = np.random.standard_normal(self._N) * self._sigma
+## MH-08-31-20: x domain is harded-code here..., but what you want to compute is 'y'!
+        
         temp = np.linspace(0., 1., self._N)
         
         return np.add(noise, temp)
