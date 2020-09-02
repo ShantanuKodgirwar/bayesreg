@@ -1,9 +1,10 @@
 ## Testing polynomial model
 
 import linear_regression as reg
+import numpy as np
 
 n_data = 20
-n_deg  = 1   ## straight line
+n_deg  = 2   ## straight line
 
 intercept = 0.
 slope = 1.
@@ -56,7 +57,7 @@ poly.params = params_orig
 
 ## is output correct?
 
-y = design_matrix.get_output() 
+y = design_matrix.get_output(poly.params) 
 y2 = poly(x)
 
 max_diff = np.fabs(y - y2).max()
