@@ -64,21 +64,15 @@ class PolyCurve(LinearModel):
     # def compute_design_matrix(self, x):
         
     #     return np.power.outer(x,range(len(self)))
-        
-class NoiseModel:
-    
-    """NoiseModel
-    Class that generates noise of different type
-    """
-                      
-    def __init__(self, N):
-        
-        self._N = int(N) # number of dependent variables used
-        
-    def gaussian_noise(self, sigma):
-        
-        return np.random.standard_normal(self._N) * sigma
 
+class Sinusoid(LinearModel):
+    
+    def __init__(self):
+        super().__init__([1.])
+    
+    def _eval(self, x):
+        return self.params[0] * np.sin(2*np.pi*x)
+        
 
 class Cost:
     """Cost
@@ -119,10 +113,32 @@ class Cost:
 
     
 class LeastSquares(Cost):
-
+    """LeastSquares
+    sum-of-squares error term as a cost function
+    """
+    
     def _eval(self, residuals):
         return 0.5 * residuals.dot(residuals)
     
+class Ridge(Cost):
+    """Ridge
+    A modified cost function that adds regularization term (ridge regression) 
+    with the sum-of-squares error term 
+    """
+
+    def __init__(self, data, model, ridge_param):
+
+        assert isinstance(model, LinearModel)
+        
+        super().__init__(data, model)
+        
+        # Ridge parameter lambda determines regularization strength
+        self.ridge_param = ridge_param 
+    
+    @property()
+    def ridge_param(self):        
+        return self.ridge_param
+        
 
 class Fitter:
     """Fitter
@@ -169,14 +185,38 @@ class SVDFitter(LSQEstimator):
 
         return V.T.dot(U.T.dot(y) / L)
     
-class Sinusoid(LinearModel):
+class RidgeEstimator(Fitter):
     
-    def __init__(self):
-        super().__init__([1.])
+    def __init__(self, cost):
+        
+        assert isinstance(cost, Ridge)
+        
+        super().__init__(cost)
+        
+    def run(self, *args):
+        
+        # cost = self.cost
+        # model = cost.model
+        
+        # X = model.compute_design_matrix(cost.x)
+        # y = cost.y
+        # ridge_param = cost.ridge_param
+        
+        pass
+
+class NoiseModel:
     
-    def _eval(self, x):
-        return self.params[0] * np.sin(2*np.pi*x)
-           
-    
+    """NoiseModel
+    Class that generates noise of different type
+    """
+                      
+    def __init__(self, N):
+        
+        self._N = int(N) # number of dependent variables used
+        
+    def gaussian_noise(self, sigma):
+        
+        return np.random.standard_normal(self._N) * sigma
+
 def rmse(y_data, y_model):
     return np.linalg.norm(y_data-y_model) / np.sqrt(len(y_data))
