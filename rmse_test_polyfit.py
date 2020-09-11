@@ -35,7 +35,7 @@ gauss_noise = noise.gaussian_noise(sigma)
 # concatenate the x and response vector y mixed with noise
 # will be used for 'training' the model
 data = np.transpose([x,y+gauss_noise])
-    
+   
 # calling the linear model
 poly = reg.PolyCurve(np.ones(M))
 

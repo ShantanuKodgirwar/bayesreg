@@ -133,12 +133,14 @@ class Ridge(Cost):
         super().__init__(data, model)
         
         # Ridge parameter lambda determines regularization strength
-        self.ridge_param = ridge_param 
+        self._ridge_param = ridge_param 
     
-    @property()
-    def ridge_param(self):        
-        return self.ridge_param
+    @property
+    def ridge_param(self):
+        return self._ridge_param
         
+    def _eval(self, residuals):
+        return 0.5 * residuals.dot(residuals) + 0.5 * self._ridge_param * self.model.params[1:]
 
 class Fitter:
     """Fitter
@@ -186,7 +188,7 @@ class SVDFitter(LSQEstimator):
         return V.T.dot(U.T.dot(y) / L)
     
 class RidgeEstimator(Fitter):
-    
+        
     def __init__(self, cost):
         
         assert isinstance(cost, Ridge)
@@ -195,14 +197,18 @@ class RidgeEstimator(Fitter):
         
     def run(self, *args):
         
-        # cost = self.cost
-        # model = cost.model
+        cost = self.cost
+        model = cost.model
         
-        # X = model.compute_design_matrix(cost.x)
-        # y = cost.y
-        # ridge_param = cost.ridge_param
+        X = model.compute_design_matrix(cost.x)
+        X_trans = np.transpose(X)
         
-        pass
+        y = cost.y
+        ridge_param = cost.ridge_param
+        
+        mat_inv = X_trans@X + ridge_param * np.eye(len(model.params))
+        
+        return np.linalg.inv(mat_inv)@X_trans@y
 
 class NoiseModel:
     
@@ -220,3 +226,4 @@ class NoiseModel:
 
 def rmse(y_data, y_model):
     return np.linalg.norm(y_data-y_model) / np.sqrt(len(y_data))
+
