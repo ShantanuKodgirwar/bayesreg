@@ -9,8 +9,6 @@ import linear_regression as reg
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-# import unittest
-# from sklearn import linear_model
 
 if __name__ == '__main__':
     
@@ -18,26 +16,31 @@ if __name__ == '__main__':
             
     M = 9 #degree of the polynomial
     N = 10 #number of dependent variables
-    sigma = 0.2
-    ridge_param = np.exp(-18)
     
-    # define training data input vector x and response vector y 
+    # define training data input vector x 
     x_train = np.linspace(0., 1., N)
+    
+    # predefined noise with sigma = 0.2
     noise_train = np.asarray([0.02333039, 0.05829248, -0.13038691, -0.29317861, -0.01635218, 
-                              -0.08768144, 0.24820263, -0.08946657, 0.36653148, 0.13669558]) # sigma = 0.2
-    y_train = true_model(x_train)
+                              -0.08768144, 0.24820263, -0.08946657, 0.36653148, 0.13669558]) 
+    
+    # training response vector with noise
+    y_train = true_model(x_train) + noise_train
      
     dx = np.diff(x_train)[0]
     
     # test data
     x_test = 0.5 * dx + x_train[:-1]
+    
+    # predefined noise with sigma = 0.2
     noise_test = np.asarray([-0.08638868, 0.02850903, -0.67500835, 0.01389309, -0.2408333, 
-                             0.05583381, -0.1050192, -0.10009032, 0.08420656]) # sigma = 0.2
+                             0.05583381, -0.1050192, -0.10009032, 0.08420656])
+    # test response vector with noise
     y_test = true_model(x_test) + noise_test
     
     # concatenate the x and response vector y mixed with noise
     # will be used for 'training' the model
-    data = np.transpose([x_train, y_train+noise_train])
+    data = np.transpose([x_train, y_train])
     
     # ridge param values
     lambda_start = int(-35.0)
@@ -69,8 +72,8 @@ if __name__ == '__main__':
     ax.set_ylabel('$E_{RMS}$')
     ax.legend(prop={'size': 12})
 
-
-# if False:
+    # assign the ridge parameter value    
+    ridge_param = np.exp(-18)
     
     # calling the linear model
     poly2 = reg.PolyCurve(np.ones(M))
@@ -83,8 +86,10 @@ if __name__ == '__main__':
     fitter_OLS = reg.LSQEstimator(reg.LeastSquares(data, poly2))
     poly_fit_OLS = fitter_OLS.run()
     
+    # fit polynomial with Ridge Regression
     poly2.params = poly_fit_ridge
-    poly2.params = poly_fit_OLS
+    
+    # poly2.params = poly_fit_OLS
     
     ## show true model and best fit 
     plt.rc('lines', lw=3)
