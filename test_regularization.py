@@ -9,16 +9,47 @@ import linear_regression as reg
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import unittest
+
+def ridge_sklearn(x_train, y_train, n_degree, alpha):
+    
+    from sklearn.linear_model import Ridge
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import PolynomialFeatures
+    
+    X = x_train[:, np.newaxis]
+    y = y_train
+    
+    model_ridge = make_pipeline(PolynomialFeatures(n_degree-1), Ridge(alpha))
+    model_ridge.fit(X, y)
+    
+    return model_ridge.predict(X) # returns best fit
+
+class Test(unittest.TestCase):
+    
+    def test_ridgefit(self):
+        # calling the linear model
+        poly = reg.PolyCurve(np.ones(n_degree))
+        
+        # fit the data using ridge estimator
+        fitter_ridge = reg.RidgeEstimator(reg.Ridge(data, poly, ridge_param))
+        poly.params = fitter_ridge.run()
+        
+        [self.assertAlmostEqual(ridgefit, ridgefit_sklearn) for ridgefit, ridgefit_sklearn 
+         in zip(poly(x_train), ridge_sklearn(x_train, y_train, n_degree, ridge_param))]
 
 if __name__ == '__main__':
-    
+        
     true_model = reg.Sinusoid()
             
-    M = 9 #degree of the polynomial
-    N = 10 #number of dependent variables
+    n_degree = 10 #degree of the polynomial
+    n_samples = 10 #number of dependent variables
     
+    # assign the ridge parameter value    
+    ridge_param = np.exp(-18)
+   
     # define training data input vector x 
-    x_train = np.linspace(0., 1., N)
+    x_train = np.linspace(0., 1., n_samples)
     
     # predefined noise with sigma = 0.2
     noise_train = np.asarray([0.02333039, 0.05829248, -0.13038691, -0.29317861, -0.01635218, 
@@ -49,21 +80,21 @@ if __name__ == '__main__':
     x_axis = np.linspace(start = lambda_start, stop = lambda_end, num = lambda_vals)
     lambda_vals = np.logspace(lambda_start, lambda_end, lambda_vals, base = math.e)
     
-    # rmse values over varying lambda values
+    # rmse values over varying lambda (ridge parameter) values
     training_error =  []
     test_error = []
     
-    for ridge_param in lambda_vals:
+    for i in lambda_vals:
         
-        poly = reg.PolyCurve(np.ones(M))
-        fitter_ridge = reg.RidgeEstimator(reg.Ridge(data, poly, ridge_param))
+        poly = reg.PolyCurve(np.ones(n_degree))
+        fitter_ridge = reg.RidgeEstimator(reg.Ridge(data, poly, i))
         poly.params = fitter_ridge.run()
         training_error.append(reg.rmse(y_train, poly(x_train)))
         test_error.append(reg.rmse(y_test, poly(x_test)))
        
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)   
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
     ax = axes[0]
     ax.set_title('RMS error vs Ridge Parameter $\lambda$')
     ax.plot(x_axis, training_error, label='training error')
@@ -71,12 +102,9 @@ if __name__ == '__main__':
     ax.set_xlabel('ln $\lambda$')
     ax.set_ylabel('$E_{RMS}$')
     ax.legend(prop={'size': 12})
-
-    # assign the ridge parameter value    
-    ridge_param = np.exp(-18)
     
     # calling the linear model
-    poly2 = reg.PolyCurve(np.ones(M))
+    poly2 = reg.PolyCurve(np.ones(n_degree))
     
     # fit the data using ridge estimator
     fitter_ridge = reg.RidgeEstimator(reg.Ridge(data, poly2, ridge_param))
@@ -91,16 +119,14 @@ if __name__ == '__main__':
     
     # poly2.params = poly_fit_OLS
     
-    ## show true model and best fit 
-    plt.rc('lines', lw=3)
-    plt.rc('font', weight='bold', size=12)   
+    # show true model and best fit 
     ax = axes[1]    
-    ax.set_title('Ridge Regression (ln $\lambda$ = -18)')
+    ax.set_title('Ridge Regression')
     ax.scatter(*data.T, s=100, color='k', alpha=0.7)
     ax.plot(x_train, poly2(x_train), color='r', label='Best fit')
     ax.plot(x_train, true_model(x_train), color='g', label='true model')
     ax.set_xlabel(r'$x_n$')
     ax.set_ylabel(r'$y_n$')
     ax.legend()
-
-
+    
+    unittest.main()

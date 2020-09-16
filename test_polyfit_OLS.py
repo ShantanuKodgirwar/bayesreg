@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
     
 true_model = reg.Sinusoid()
         
-M = 14 #degree of the polynomial
+M = 4 #degree of the polynomial
 N = 15 #number of dependent variables
 sigma = 0.2
     

@@ -57,14 +57,9 @@ class PolyCurve(LinearModel):
         
     def _eval(self, x):
         
-        # evaluate the polynomial 
-        
+        # evaluate the polynomial        
         return np.polyval(self._params[::-1], x)
     
-    # def compute_design_matrix(self, x):
-        
-    #     return np.power.outer(x,range(len(self)))
-
 class Sinusoid(LinearModel):
     
     def __init__(self):
@@ -140,7 +135,7 @@ class Ridge(Cost):
         return self._ridge_param
         
     def _eval(self, residuals):
-        return 0.5 * residuals.dot(residuals) + 0.5 * self._ridge_param * self.model.params[1:]
+        return 0.5 * residuals.dot(residuals) + 0.5 * self._ridge_param * np.sum(self.model.params[1:]**2)
 
 class Fitter:
     """Fitter
@@ -206,7 +201,10 @@ class RidgeEstimator(Fitter):
         y = cost.y
         ridge_param = cost.ridge_param
         
-        mat_inv = X_trans@X + ridge_param * np.eye(len(model.params))
+        # basis vector
+        e = np.eye(1,len(model.params),0)
+        
+        mat_inv = X_trans@X + ridge_param * (np.eye(len(model.params)) - np.transpose(e)@e)
         
         return np.linalg.inv(mat_inv)@X_trans@y
 
