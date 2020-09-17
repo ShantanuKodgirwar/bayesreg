@@ -68,18 +68,38 @@ class Sinusoid(LinearModel):
     def _eval(self, x):
         return self.params[0] * np.sin(2*np.pi*x)
         
-
 class Cost:
     """Cost
+    Scoring model quality
+    """    
+    def __init__(self, model, **kwargs):
+        
+        assert isinstance(model, LinearModel)
+        
+        self.model = model
+        
+        for A, ridge_param in kwargs.items():
+                        
+            self.A = A
+            self.ridge_param = ridge_param
+
+    def _eval(self, params):
+        
+        msg = 'Needs to be implemented by subclass'
+        return NotImplementedError(msg)
+
+class GoodnessOfFit(Cost):
+    """GoodnessOfFit
     Fit criterion that will be minimized to obtain the model that explains
     the data best
     """
     def __init__(self, data, model):
-
+        
         assert isinstance(model, LinearModel)
-
+        
+        super().__init__(model)
+        
         self.data = np.array(data)
-        self.model = model
 
     @property
     def x(self):
@@ -106,40 +126,91 @@ class Cost:
         msg = 'Needs to be implemented by subclass'
         return NotImplementedError(msg)
 
-    
-class LeastSquares(Cost):
+class LeastSquares(GoodnessOfFit):
     """LeastSquares
     sum-of-squares error term as a cost function
     """
-    
     def _eval(self, residuals):
         return 0.5 * residuals.dot(residuals)
-    
-class Ridge(Cost):
-    """Ridge
-    A modified cost function that adds regularization term (ridge regression) 
-    with the sum-of-squares error term 
-    """
 
-    def __init__(self, data, model, ridge_param):
+class Gradient(Cost):
+    """Gradient
+    Compute the gradient of the cost function and calculate the norm of it
+    """
+    
+    pass
+
+class RidgeRegularizer(Cost):
+    """RidgeRegularizer
+    Implements the general ridge regularization term consisting of a 
+    penalizing term 'Ridge_param' and general regulazer term 'A'
+    """
+    def __init__(self, model, ridge_param, A=None):
 
         assert isinstance(model, LinearModel)
         
-        super().__init__(data, model)
+        super().__init__(model)
         
-        # Ridge parameter lambda determines regularization strength
         self._ridge_param = ridge_param 
+        
+        if A is None:
+            A = np.eye(len(model))
+        
+        else:
+            
+            # test if the matrix is symmetric
+            if A != np.transpose(A):
+                raise ValueError('A must be a symmetric matrix')
+            
+            # eigen values of real symmetric/complex Hermitian matrix
+            eig_vals, _ = np.linalg.eigh(A)
+            
+            # eigen values non-negative to test semi-definite condition
+            if eig_vals < 0:
+                raise ValueError('A is not a semi-definite matrix')
+
+        self.A = A
     
     @property
     def ridge_param(self):
         return self._ridge_param
         
     def _eval(self, residuals):
-        return 0.5 * residuals.dot(residuals) + 0.5 * self._ridge_param * np.sum(self.model.params[1:]**2)
+        
+        params = self.model.params
+        
+        return 0.5 * self._ridge_param * params.dot(self.A.dot(params))
+
+class SumOfCosts(Cost):
+    """SumOfCosts
+    Summation of costs from regression analysis
+    (Ex: Ordinary Least squares and Ridge Regularizer)
+    """
+
+    def __init__(self, model, *costs):
+
+        for cost in costs:
+            msg = "{0} should be subclass of Cost".format(cost)
+            assert isinstance(cost, Cost), msg
+            
+            assert cost.model is model
+    
+        super().__init__(model)
+        
+        self._costs = costs
+    
+    def _eval(self, params):
+        
+        vals = [cost._eval(params) for cost in self._costs]
+        
+        return np.sum(vals)
+    
+    def __iter__(self):
+        return iter(self._costs)
 
 class Fitter:
     """Fitter
-    Fits the data by estimating the least square estimator or regression coefficients (weights) 
+    Fits the data by computing the unknown weights/parameters
     """        
     def __init__(self, cost):
         
@@ -151,7 +222,10 @@ class Fitter:
         raise NotImplementedError(msg)
         
 class LSQEstimator(Fitter):
-    
+    """LSQEstimator
+    Ordinary least squared estimator that minimizes sum-of-squared residuals 
+    and calculates regression parameters  
+    """
     def __init__(self, cost):
         
         assert isinstance(cost, LeastSquares)
@@ -168,7 +242,7 @@ class LSQEstimator(Fitter):
          
         return np.linalg.pinv(X).dot(y)
     
-class SVDFitter(LSQEstimator):
+class SVDEstimator(LSQEstimator):
 
     def run(self, *args):
         
@@ -183,35 +257,39 @@ class SVDFitter(LSQEstimator):
         return V.T.dot(U.T.dot(y) / L)
     
 class RidgeEstimator(Fitter):
+    """RidgeEstimator
+    Generalized Ridge regularizer estimator (modified LSQEstimator) that 
+    minimizes sum-of-squares residuals
+    """        
+    def __init__(self, sum_of_costs):
         
-    def __init__(self, cost):
+        assert isinstance(sum_of_costs, SumOfCosts)
         
-        assert isinstance(cost, Ridge)
-        
-        super().__init__(cost)
+        for cost in sum_of_costs:
+            
+            isinstance(cost, RidgeRegularizer) or isinstance(cost, LeastSquares)
+                   
+        super().__init__(sum_of_costs)
         
     def run(self, *args):
         
-        cost = self.cost
-        model = cost.model
+        A = 0.
+        b = 0.
         
-        X = model.compute_design_matrix(cost.x)
-        X_trans = np.transpose(X)
-        
-        y = cost.y
-        ridge_param = cost.ridge_param
-        
-        # basis vector
-        e = np.eye(1,len(model.params),0)
-        
-        mat_inv = X_trans@X + ridge_param * (np.eye(len(model.params)) - np.transpose(e)@e)
-        
-        return np.linalg.inv(mat_inv)@X_trans@y
+        for cost in self.cost:
+            
+            if isinstance(cost, RidgeRegularizer):
+                A += cost.ridge_param * cost.A
+            else:     
+                X = cost.model.compute_design_matrix(cost.x)
+                A += X.T.dot(X)
+                b += X.T.dot(cost.y)
+      
+        return np.linalg.inv(A)@b
 
-class NoiseModel:
-    
+class NoiseModel:    
     """NoiseModel
-    Class that generates noise of different type
+    Class that generates different types of noise
     """
                       
     def __init__(self, N):
