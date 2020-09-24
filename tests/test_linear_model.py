@@ -1,28 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  9 18:48:35 2020
-
-@author: shantanu
-"""
-import linear_regression as reg
+import bayesian_linear_regression as reg
 import numpy as np
 import matplotlib.pyplot as plt
 import math
 import unittest
+
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
 
 class Test(unittest.TestCase):
-    
     """
     Class that calls the unittest module for writing test cases 
-    """
-    
-    def test_OLS_fit(self):
-        
+    """    
+    def test_OLS_fit(self):        
         """        
         Cross-verifies the fit from LSQEstimator class with the fit from 
         sklearn class LinearRegression
@@ -32,8 +23,7 @@ class Test(unittest.TestCase):
          for OLS_fit, OLS_fit_sklearn in zip(OLS_fit(x_train, y_train, n_degree), 
                                              OLS_fit_sklearn(x_train, y_train, n_degree))]
 
-    def test_ridge_fit(self):
-        
+    def test_ridge_fit(self):        
         """ 
         Cross-verifies the fit from ridge class with the fit of sklearn 
         class Ridge 
@@ -45,15 +35,13 @@ class Test(unittest.TestCase):
                                                 ridge_fit_sklearn(x_train, y_train, 
                                                                   n_degree, ridge_param))]
 
-def OLS_fit(x, y, n_degree):
-    
+def OLS_fit(x, y, n_degree):    
     """ 
     Implements the classes that calls the Ordinary Least-Square estimator 
-    """
-    
+    """    
     data = np.transpose([x, y])
     
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = reg.Polynomial(np.ones(n_degree))
     
     lsq = reg.LeastSquares(data, poly)
 
@@ -63,12 +51,10 @@ def OLS_fit(x, y, n_degree):
         
     return poly(x)
 
-def OLS_fit_sklearn(x, y, n_degree):
-    
+def OLS_fit_sklearn(x, y, n_degree):    
     """ 
     Implements OLS using scikit-learn 
-    """
-        
+    """        
     X = x[:, np.newaxis]
     
     model_OLS = make_pipeline(PolynomialFeatures(n_degree-1),LinearRegression())
@@ -77,11 +63,10 @@ def OLS_fit_sklearn(x, y, n_degree):
     return model_OLS.predict(X)
 
 def OLS_rmse(x_train, y_train, x_test, y_test, n_degree):
-
     """ 
     Training data and test data rms error by varying n_degree 
     """
-    
+
     data = np.transpose([x_train, y_train])
     
     train_error = []
@@ -89,7 +74,7 @@ def OLS_rmse(x_train, y_train, x_test, y_test, n_degree):
 
     for n_degree in range(1, len(x_train)):
         
-        poly = reg.PolyCurve(np.ones(n_degree))
+        poly = reg.Polynomial(np.ones(n_degree))
 
         lsq = reg.LeastSquares(data, poly)
 
@@ -104,14 +89,12 @@ def OLS_rmse(x_train, y_train, x_test, y_test, n_degree):
     return train_error, test_error
 
 def ridge_fit(x, y, n_degree, ridge_param):
-    
     """
     Implements the necessary classes to predict values of response vector
     """
-    
     data = np.transpose([x, y])
 
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = reg.Polynomial(np.ones(n_degree))
     
     lsq = reg.LeastSquares(data, poly)
     
@@ -126,11 +109,9 @@ def ridge_fit(x, y, n_degree, ridge_param):
     return poly(x)
 
 def ridge_fit_sklearn(x, y, n_degree, ridge_param):
-    
     """
     Ridge regression using scikit-learn
     """
-        
     X = x[:, np.newaxis]
     
     model_ridge = make_pipeline(PolynomialFeatures(n_degree-1), Ridge(ridge_param))
@@ -139,17 +120,15 @@ def ridge_fit_sklearn(x, y, n_degree, ridge_param):
     return model_ridge.predict(X) # returns best fit
 
 def ridge_rmse(x_train, y_train, x_test, y_test, n_degree, lambda_vals):   
-    
     """
     Training data and test data rmse error by varying ridge parameter
     """
-    
     train_error = []
     test_error = []
 
     data = np.transpose([x_train, y_train])
 
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = reg.Polynomial(np.ones(n_degree))
     
     for ridge_param in lambda_vals:       
 
