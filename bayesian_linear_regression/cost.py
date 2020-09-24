@@ -73,14 +73,6 @@ class LeastSquares(GoodnessOfFit):
         return 0.5 * residuals.dot(residuals)
 
     
-class Gradient(Cost):
-    """Gradient
-
-    Compute the gradient of the cost function and calculate the norm of it
-    """    
-    pass
-
-
 class RidgeRegularizer(Cost):
     """RidgeRegularizer
 
