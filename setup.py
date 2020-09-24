@@ -12,7 +12,7 @@ except IOError:
 NAME        = "bayesian_linear_regression"
 VERSION     = "0.1"
 AUTHOR      = "Shantanu Kodgirwar, Michael Habeck"
-EMAIL       = "michael.habeck@uni-jena.de"
+EMAIL       = "shantanu.kodgirwar@uni-jena.de, michael.habeck@uni-jena.de"
 DESCRIPTION = __doc__
 LICENSE     = 'MIT'
 REQUIRES    = ['numpy', 'scipy', 'matplotlib', 'sklearn']
