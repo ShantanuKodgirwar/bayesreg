@@ -5,8 +5,12 @@ Created on Wed Sep  9 18:48:35 2020
 
 @author: shantanu
 """
-import linear_regression as reg
+# import linear_regression as reg
+import Linear_Model as LM
+import Cost
+import Estimator
 import numpy as np
+import numpy.testing as npt
 import matplotlib.pyplot as plt
 import math
 import unittest
@@ -16,7 +20,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 
 class Test(unittest.TestCase):
-    
+        
     """
     Class that calls the unittest module for writing test cases 
     """
@@ -27,10 +31,9 @@ class Test(unittest.TestCase):
         Cross-verifies the fit from LSQEstimator class with the fit from 
         sklearn class LinearRegression
         """
-
-        [self.assertAlmostEqual(OLS_fit, OLS_fit_sklearn, places = 3) 
-         for OLS_fit, OLS_fit_sklearn in zip(OLS_fit(x_train, y_train, n_degree), 
-                                             OLS_fit_sklearn(x_train, y_train, n_degree))]
+        
+        npt.assert_almost_equal(OLS_fit(x_train, y_train, n_degree), 
+                                OLS_fit_sklearn(x_train, y_train, n_degree), decimal=3)
 
     def test_ridge_fit(self):
         
@@ -38,12 +41,14 @@ class Test(unittest.TestCase):
         Cross-verifies the fit from ridge class with the fit of sklearn 
         class Ridge 
         """
-                
-        [self.assertAlmostEqual(ridgefit, ridge_fit_sklearn, places = 3) 
-         for ridgefit, ridge_fit_sklearn in zip(ridge_fit(x_train, y_train, n_degree, 
-                                                          ridge_param), 
-                                                ridge_fit_sklearn(x_train, y_train, 
-                                                                  n_degree, ridge_param))]
+                        
+        npt.assert_almost_equal(ridge_fit(x_train, y_train, n_degree, ridge_param),
+                                ridge_fit_sklearn(x_train, y_train, n_degree, ridge_param),
+                                decimal=3)
+
+def rmse(y_data, y_model):
+    return np.linalg.norm(y_data-y_model) / np.sqrt(len(y_data))
+
 
 def OLS_fit(x, y, n_degree):
     
@@ -53,11 +58,11 @@ def OLS_fit(x, y, n_degree):
     
     data = np.transpose([x, y])
     
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = LM.PolyCurve(np.ones(n_degree))
     
-    lsq = reg.LeastSquares(data, poly)
+    lsq = Cost.LeastSquares(data, poly)
 
-    estimator = reg.LSQEstimator(lsq)    
+    estimator = Estimator.LSQEstimator(lsq)    
 
     poly.params = estimator.run()
         
@@ -89,17 +94,17 @@ def OLS_rmse(x_train, y_train, x_test, y_test, n_degree):
 
     for n_degree in range(1, len(x_train)):
         
-        poly = reg.PolyCurve(np.ones(n_degree))
+        poly = LM.PolyCurve(np.ones(n_degree))
 
-        lsq = reg.LeastSquares(data, poly)
+        lsq = Cost.LeastSquares(data, poly)
 
-        estimator = reg.LSQEstimator(lsq)    
+        estimator = Estimator.LSQEstimator(lsq)    
         
         poly.params = estimator.run()
         
-        train_error.append(reg.rmse(y_train, poly(x_train)))
+        train_error.append(rmse(y_train, poly(x_train)))
         
-        test_error.append(reg.rmse(y_test, poly(x_test)))
+        test_error.append(rmse(y_test, poly(x_test)))
         
     return train_error, test_error
 
@@ -111,15 +116,15 @@ def ridge_fit(x, y, n_degree, ridge_param):
     
     data = np.transpose([x, y])
 
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = LM.PolyCurve(np.ones(n_degree))
     
-    lsq = reg.LeastSquares(data, poly)
+    lsq = Cost.LeastSquares(data, poly)
     
-    ridge = reg.RidgeRegularizer(poly, ridge_param)
+    ridge = Cost.RidgeRegularizer(poly, ridge_param)
         
-    total_cost = reg.SumOfCosts(poly, lsq, ridge)
+    total_cost = Cost.SumOfCosts(poly, lsq, ridge)
 
-    estimator = reg.RidgeEstimator(total_cost)
+    estimator = Estimator.RidgeEstimator(total_cost)
 
     poly.params = estimator.run()
         
@@ -149,29 +154,29 @@ def ridge_rmse(x_train, y_train, x_test, y_test, n_degree, lambda_vals):
 
     data = np.transpose([x_train, y_train])
 
-    poly = reg.PolyCurve(np.ones(n_degree))
+    poly = LM.PolyCurve(np.ones(n_degree))
     
     for ridge_param in lambda_vals:       
 
-        lsq = reg.LeastSquares(data, poly)
+        lsq = Cost.LeastSquares(data, poly)
         
-        ridge = reg.RidgeRegularizer(poly, ridge_param)
+        ridge = Cost.RidgeRegularizer(poly, ridge_param)
             
-        total_cost = reg.SumOfCosts(poly, lsq, ridge)
+        total_cost = Cost.SumOfCosts(poly, lsq, ridge)
     
-        estimator = reg.RidgeEstimator(total_cost)
+        estimator = Estimator.RidgeEstimator(total_cost)
     
         poly.params = estimator.run()
 
-        train_error.append(reg.rmse(y_train, poly(x_train)))
+        train_error.append(rmse(y_train, poly(x_train)))
         
-        test_error.append(reg.rmse(y_test, poly(x_test)))
+        test_error.append(rmse(y_test, poly(x_test)))
     
     return train_error, test_error
     
 if __name__ == '__main__':
         
-    true_model = reg.Sinusoid()
+    true_model = LM.Sinusoid()
             
     n_degree = 10 # degree of the polynomial
 
