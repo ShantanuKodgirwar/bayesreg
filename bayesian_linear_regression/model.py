@@ -76,4 +76,14 @@ class Sinusoid(LinearModel):
     def _eval(self, x):
         return self.params[0] * np.sin(2*np.pi*x)
         
+class Sinc(LinearModel):
+    """Sinc
+    Used for testing
+    """
+    def __init__(self):
+        super().__init__([1.])
+        
+    def _eval(self, x):
+        return self.params[0] * np.sinc(x)
+    
 
