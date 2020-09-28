@@ -1,4 +1,6 @@
-import bayesian_linear_regression as reg
+
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -8,6 +10,12 @@ from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
+pypath = os.path.abspath('../')
+
+if pypath not in sys.path:
+    sys.path.insert(0, pypath)
+
+import bayesian_linear_regression as reg
 
 class Test(unittest.TestCase):
     """
@@ -18,22 +26,19 @@ class Test(unittest.TestCase):
         Cross-verifies the fit from LSQEstimator class with the fit from 
         sklearn class LinearRegression
         """
-
-        [self.assertAlmostEqual(OLS_fit, OLS_fit_sklearn, places = 3) 
-         for OLS_fit, OLS_fit_sklearn in zip(OLS_fit(x_train, y_train, n_degree), 
-                                             OLS_fit_sklearn(x_train, y_train, n_degree))]
+        
+        np.testing.assert_almost_equal(OLS_fit(x_train, y_train, n_degree),
+                                       OLS_fit_sklearn(x_train, y_train, n_degree), decimal=3)
 
     def test_ridge_fit(self):        
         """ 
         Cross-verifies the fit from ridge class with the fit of sklearn 
         class Ridge 
         """
-                
-        [self.assertAlmostEqual(ridgefit, ridge_fit_sklearn, places = 3) 
-         for ridgefit, ridge_fit_sklearn in zip(ridge_fit(x_train, y_train, n_degree, 
-                                                          ridge_param), 
-                                                ridge_fit_sklearn(x_train, y_train, 
-                                                                  n_degree, ridge_param))]
+              
+        np.testing.assert_almost_equal(ridge_fit(x_train, y_train, n_degree, ridge_param),
+                                       ridge_fit_sklearn(x_train, y_train, n_degree, 
+                                                         ridge_param), decimal=3)
 
 def OLS_fit(x, y, n_degree):    
     """ 
