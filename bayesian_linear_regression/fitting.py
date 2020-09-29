@@ -1,10 +1,9 @@
 """
-Collection of classes used for parameter estimation
+Collection of classes used for parameter estimation.
 """
 import numpy as np
 
 from .cost import Cost, LeastSquares, RidgeRegularizer, SumOfCosts
-
 
 class Fitter:
     """Fitter

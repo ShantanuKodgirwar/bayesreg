@@ -1,14 +1,9 @@
-## Testing polynomial model
+"""
+Testing polynomial model
+"""
 
-import os
-import sys
 import bayesian_linear_regression as reg
 import numpy as np
-
-pypath = os.path.abspath('../')
-
-if pypath not in sys.path:
-    sys.path.insert(0, pypath)
 
 n_data = 20
 n_deg  = 2   ## straight line

@@ -1,10 +1,8 @@
 """
-Cost functions for parameter fitting
+Collection of classes used for evaluation of cost/error
 """
 import numpy as np
-
 from .model import LinearModel
-
 
 class Cost:
     """Cost
@@ -95,7 +93,7 @@ class RidgeRegularizer(Cost):
                 raise ValueError('A must be a symmetric matrix')
             
             # eigen values of real symmetric/complex Hermitian matrix
-            eig_vals, _ = np.linalg.eigh(A)
+            eig_vals = np.linalg.eigvalsh(A)
             
             # eigen values non-negative to test semi-definite condition
             if eig_vals < 0:

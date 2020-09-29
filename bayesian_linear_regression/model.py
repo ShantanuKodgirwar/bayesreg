@@ -3,7 +3,6 @@ Forward models
 """
 import numpy as np
 
-
 class LinearModel:
     """LinearModel
 
@@ -85,5 +84,3 @@ class Sinc(LinearModel):
         
     def _eval(self, x):
         return self.params[0] * np.sinc(x)
-    
-

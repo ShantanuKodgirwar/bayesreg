@@ -1,21 +1,15 @@
-
-import os
-import sys
+"""
+Testing linear model (Ordinary Least Squares and Ridge Regression)
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import math
 import unittest
+import bayesian_linear_regression as reg
 
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
-
-pypath = os.path.abspath('../')
-
-if pypath not in sys.path:
-    sys.path.insert(0, pypath)
-
-import bayesian_linear_regression as reg
 
 class Test(unittest.TestCase):
     """

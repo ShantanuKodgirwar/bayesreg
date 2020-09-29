@@ -8,7 +8,6 @@ __pycache__/
 
 # emacs backup files
 *~
-*.pyc
 
 # Distribution / packaging
 .Python
@@ -27,6 +26,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
 MANIFEST
 
 # PyInstaller
