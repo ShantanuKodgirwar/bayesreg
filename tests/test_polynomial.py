@@ -1,18 +1,10 @@
 """
 Some basic tests of the functionality of the Polynomial class
 """
-import os
-import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-
-pypath = os.path.abspath('../')
-
-if pypath not in sys.path:
-    sys.path.insert(0, pypath)
-
 import bayesian_linear_regression as reg
 
 n_params = 20
@@ -38,8 +30,6 @@ t2 = time.process_time() - t2
 
 print('difference in design matrices:', np.fabs(X-X2).max())
 print('computation times: ', t, t2)
-
-# raise
 
 class PolyFitter(reg.LSQEstimator):
 
@@ -97,7 +87,7 @@ def fit_models(fitter, n_params, test_set=None):
         return train_error
 
 true_model = lambda x : np.sinc(x)
-# true_model = reg.Sinc()
+true_model = reg.Sinc()
 
 n_params = 20
 n_data = 20
@@ -150,8 +140,6 @@ for a in ax:
     a.legend()
 
 fig.tight_layout()
-
-# raise
 
 print('polyfit vs our:', reg.rmse(params_true, theta))
 print('polyfit vs our:', reg.rmse(params_true, theta2))
