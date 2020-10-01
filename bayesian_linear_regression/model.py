@@ -63,7 +63,6 @@ class Polynomial(LinearModel):
     def compute_design_matrix(self, x):
         return np.power.outer(x, np.arange(len(self)))
     
-    
 class Sinusoid(LinearModel):
     """Sinusoid
 
