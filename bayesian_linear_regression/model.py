@@ -40,7 +40,6 @@ class LinearModel:
         self.params = current_params
         
         return matrix
-
     
 class StraightLine(LinearModel):
 

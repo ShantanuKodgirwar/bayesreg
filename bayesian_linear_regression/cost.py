@@ -24,8 +24,7 @@ class Cost:
         
         msg = 'Needs to be implemented by subclass'
         return NotImplementedError(msg)
-
-    
+   
 class GoodnessOfFit(Cost):
     """GoodnessOfFit
 
@@ -60,7 +59,6 @@ class GoodnessOfFit(Cost):
         msg = 'Needs to be implemented by subclass'
         return NotImplementedError(msg)
 
-    
 class LeastSquares(GoodnessOfFit):
     """LeastSquares
 
@@ -86,19 +84,13 @@ class RidgeRegularizer(Cost):
         if A is None:
             A = np.eye(len(model))
         
-        else:
-            
-            # test if the matrix is symmetric
-            if A != np.transpose(A):
-                raise ValueError('A must be a symmetric matrix')
-            
-            # eigen values of real symmetric/complex Hermitian matrix
-            eig_vals = np.linalg.eigvalsh(A)
-            
-            # eigen values non-negative to test semi-definite condition
-            if eig_vals < 0:
-                raise ValueError('A is not a semi-definite matrix')
-
+        else:           
+            msg = 'A must be a symmetric matrix'
+            assert np.allclose(A, A.T, rtol=1e-05, atol=1e-08), msg
+                        
+            msg = 'A must be positive semi-definite'
+            assert np.linalg.eigvalsh(A) >= 0, msg
+                        
         self.A = A
     
     @property
