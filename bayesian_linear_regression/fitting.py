@@ -36,10 +36,10 @@ class LSQEstimator(Fitter):
         
         cost = self.cost
         model = cost.model
-        
+
         X = model.compute_design_matrix(cost.x)
         y = cost.y
-         
+
         return np.linalg.pinv(X).dot(y)
 
     

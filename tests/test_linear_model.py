@@ -53,7 +53,6 @@ def OLS_fit(x, y, n_degree):
 
     return poly(x)
 
-
 def OLS_fit_sklearn(x, y, n_degree):
     """ 
     Implements OLS using scikit-learn 
@@ -157,13 +156,11 @@ def ridge_rmse(x_train, y_train, x_test, y_test, n_degree, lambda_vals):
 if __name__ == '__main__':
     true_model = reg.Sinusoid()
 
-    n_degree = 10  # degree of the polynomial
+    n_degree = 9  # degree of the polynomial
 
     n_samples = 10  # number of dependent variables
 
     sigma = 0.2  # Gaussian noise parameter
-
-    ridge_param = np.exp(-9)  # assign the ridge parameter value
 
     x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
 
@@ -205,7 +202,8 @@ if __name__ == '__main__':
 
     train_error_ridge, test_error_ridge = ridge_rmse(x_train, y_train, x_test, y_test,
                                                      n_degree, lambda_vals)
-
+    temp = OLS_fit(x_train, y_train, n_degree)
+    
     # plot results            
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)

@@ -6,5 +6,5 @@ from .fitting import Fitter, LSQEstimator, SVDEstimator, RidgeEstimator
 from .cost import Cost, GoodnessOfFit, LeastSquares, RidgeRegularizer, \
      SumOfCosts
 from .optimizer import Optimizer, GradientDescent
-from .utils import rmse
+from .utils import rmse, calc_gradient, calc_hessian
 

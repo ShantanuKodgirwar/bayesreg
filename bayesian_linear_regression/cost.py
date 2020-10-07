@@ -66,7 +66,7 @@ class LeastSquares(GoodnessOfFit):
     model is a Gaussian)
     """
 
-    def _eval(self, residuals):
+    def _eval(self, residuals):        
         return 0.5 * residuals.dot(residuals)
 
 
@@ -78,9 +78,7 @@ class RidgeRegularizer(Cost):
     """
 
     def __init__(self, model, ridge_param, A=None):
-
         super().__init__(model)
-
         self._ridge_param = ridge_param
 
         if A is None:
@@ -100,9 +98,7 @@ class RidgeRegularizer(Cost):
         return self._ridge_param
 
     def _eval(self, residuals):
-
         params = self.model.params
-
         return 0.5 * self._ridge_param * params.dot(self.A.dot(params))
 
 
@@ -120,7 +116,6 @@ class SumOfCosts(Cost):
             assert cost.model is model
 
         super().__init__(model)
-
         self._costs = costs
 
     def _eval(self, params):
