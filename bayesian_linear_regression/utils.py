@@ -2,6 +2,7 @@
 Collection of useful functions
 """
 import numpy as np
+from scipy.optimize import approx_fprime
 
 
 def rmse(y_data, y_model):

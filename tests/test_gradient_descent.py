@@ -3,6 +3,7 @@ Testing Gradient Descent algorithm
 """
 import numpy as np
 import bayesian_linear_regression as reg
+import matplotlib.pyplot as plt
 import unittest
 
 
@@ -26,7 +27,7 @@ def calc_gradient_descent(x_train, y_train, alpha, num_iter):
     """
     data = np.transpose([x_train, y_train])
 
-    poly = reg.Polynomial(np.zeros(n_degree))
+    poly = reg.Polynomial(np.ones(n_degree))
 
     lsq = reg.LeastSquares(data, poly)
 
@@ -40,7 +41,7 @@ def calc_gradient_descent(x_train, y_train, alpha, num_iter):
 if __name__ == '__main__':
     true_model = reg.Sinusoid()
 
-    n_degree = 9  # degree of the polynomial
+    n_degree = 10  # degree of the polynomial
 
     n_samples = 10  # number of dependent variables
 
@@ -60,4 +61,16 @@ if __name__ == '__main__':
 
     alpha = 0.01  # Learning rate
 
-    num_iter = 100  # No. of iterations
+    num_iter = 2000  # No. of iterations
+
+    calc_gradient_descent(x_train, y_train, alpha, num_iter)
+
+    plt.figure()
+    plt.scatter(x_train, y_train, s=100, alpha=0.7)
+    plt.plot(x_train, calc_gradient_descent(x_train, y_train, alpha, num_iter), label='Gradient Descent fit')
+    plt.plot(x_train, true_model(x_train), label='true model')
+    plt.xlabel(r'$x_n$')
+    plt.ylabel(r'$y_n$')
+    plt.grid(linestyle='--')
+    plt.legend()
+    plt.show()

@@ -6,6 +6,8 @@ import numpy as np
 from .cost import Cost, LeastSquares, RidgeRegularizer, SumOfCosts
 from .utils import calc_gradient
 
+
+
 class Optimizer:
     """Optimizer
     
@@ -44,19 +46,14 @@ class GradientDescent(Optimizer):
         self.learn_rate = learn_rate
         self.num_iter = num_iter
 
-    def feature_normalize(self, X):
-        pass
-
     def run(self):
         cost = self.cost
         model = cost.model
 
-        X = model.compute_design_matrix(cost.x)
-        y = cost.y
         params = model.params
         for i in range(self.num_iter):
-            for j in range(len(model.params)):
-                params += params - self.learn_rate * calc_gradient(cost, params, eps)
+            for j in range(len(params)):
+                params_init = params
+                params = params - self.learn_rate * calc_gradient(cost, params_init)
 
-
-
+        return params
