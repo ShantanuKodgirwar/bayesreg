@@ -4,6 +4,7 @@ Testing Gradient Descent algorithm
 import numpy as np
 import bayesian_linear_regression as reg
 import matplotlib.pyplot as plt
+import time
 import unittest
 
 
@@ -15,8 +16,8 @@ def calc_gradient_descent(x_train, y_train, alpha, num_iter):
 
     Parameters
     ----------
-    x_train : Training or testing set
-    y_train :
+    x_train : input training/testing set
+    y_train : output training/testing set
     alpha : Learning rate
     num_iter : No. of iterations
 
@@ -33,12 +34,46 @@ def calc_gradient_descent(x_train, y_train, alpha, num_iter):
 
     optimize = reg.GradientDescent(lsq, alpha, num_iter)
 
-    poly.params = optimize.run()
+    params, params_iter = optimize.run()
 
-    return poly(x_train)
+    poly.params = params
+
+    return poly(x_train), params_iter
+
+
+def calc_cost_iter(x_train, y_train, alpha, num_iter):
+    """
+
+    Parameters
+    ----------
+    x_train : input training/testing set
+    y_train : output training/testing set
+    alpha : Learning rate
+    num_iter : No. of iterations
+
+    Returns
+    -------
+    cost_iter: returns the cost for parameters evaluated in every iteration
+    with gradient descent
+    """
+
+    data = np.transpose([x_train, y_train])
+    _, params_hist = calc_gradient_descent(x_train, y_train, alpha, num_iter)
+
+    cost_iter = []
+    for params in params_hist:
+        poly = reg.Polynomial(params)
+
+        lsq = reg.LeastSquares(data, poly)
+        cost_val = lsq._eval(lsq.residuals)
+        cost_iter.append(cost_val)
+
+    return cost_iter
 
 
 if __name__ == '__main__':
+    t = time.process_time()
+
     true_model = reg.Sinusoid()
 
     n_degree = 10  # degree of the polynomial
@@ -57,20 +92,30 @@ if __name__ == '__main__':
     # Gaussian noise
     # noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma)
 
-    y_train = true_model(x_train) + noise_train  # training response vector with noise
+    # training response vector with noise
+    y_train = true_model(x_train) + noise_train
 
-    alpha = 0.01  # Learning rate
+    alpha = 0.09  # Learning rate
 
-    num_iter = 2000  # No. of iterations
+    num_iter = 5000  # No. of iterations
 
-    calc_gradient_descent(x_train, y_train, alpha, num_iter)
+    # predicted value after implementing gradient descent
+    y_pred, _ = calc_gradient_descent(x_train, y_train, alpha, num_iter)
 
+    cost_iter = calc_cost_iter(x_train, y_train, alpha, num_iter)
+
+    #%%
+    # plot
     plt.figure()
     plt.scatter(x_train, y_train, s=100, alpha=0.7)
-    plt.plot(x_train, calc_gradient_descent(x_train, y_train, alpha, num_iter), label='Gradient Descent fit')
+    plt.plot(x_train, y_pred, label='Gradient Descent')
     plt.plot(x_train, true_model(x_train), label='true model')
+    plt.title('Fitting by Gradient Descent')
     plt.xlabel(r'$x_n$')
     plt.ylabel(r'$y_n$')
     plt.grid(linestyle='--')
     plt.legend()
     plt.show()
+
+    t = time.process_time()-t
+    print('computation time: ', t)

@@ -47,13 +47,22 @@ class GradientDescent(Optimizer):
         self.num_iter = num_iter
 
     def run(self):
+        """
+
+        Returns
+        -------
+        params: ndarray
+            returns the evaluated parameters
+        params_hist: list
+            returns the parameters for every iteration
+        """
         cost = self.cost
         model = cost.model
 
         params = model.params
+        params_iter = []
         for i in range(self.num_iter):
-            for j in range(len(params)):
-                params_init = params
-                params = params - self.learn_rate * calc_gradient(cost, params_init)
+            params = params - self.learn_rate * calc_gradient(cost, params)
+            params_iter.append(params)
 
-        return params
+        return params, params_iter
