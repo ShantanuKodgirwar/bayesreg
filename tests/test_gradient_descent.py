@@ -58,10 +58,10 @@ def calc_cost_iter(x_train, y_train, alpha, num_iter):
     """
 
     data = np.transpose([x_train, y_train])
-    _, params_hist = calc_gradient_descent(x_train, y_train, alpha, num_iter)
+    _, params_iter = calc_gradient_descent(x_train, y_train, alpha, num_iter)
 
     cost_iter = []
-    for params in params_hist:
+    for params in params_iter:
         poly = reg.Polynomial(params)
 
         lsq = reg.LeastSquares(data, poly)
@@ -97,24 +97,43 @@ if __name__ == '__main__':
 
     alpha = 0.09  # Learning rate
 
-    num_iter = 5000  # No. of iterations
+    num_iter = int(1.5e4)  # No. of iterations
 
     # predicted value after implementing gradient descent
     y_pred, _ = calc_gradient_descent(x_train, y_train, alpha, num_iter)
 
     cost_iter = calc_cost_iter(x_train, y_train, alpha, num_iter)
+    cost_iter = np.array(cost_iter)
 
     #%%
     # plot
-    plt.figure()
-    plt.scatter(x_train, y_train, s=100, alpha=0.7)
-    plt.plot(x_train, y_pred, label='Gradient Descent')
-    plt.plot(x_train, true_model(x_train), label='true model')
-    plt.title('Fitting by Gradient Descent')
-    plt.xlabel(r'$x_n$')
-    plt.ylabel(r'$y_n$')
-    plt.grid(linestyle='--')
-    plt.legend()
+    plt.rc('lines', lw=3)
+    plt.rc('font', weight='bold', size=12)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    plt.subplots_adjust(hspace=0.3)
+
+    start = int(1.5e3)
+    stop = num_iter
+    x_num_iter = np.linspace(start, stop, stop - start)
+
+    ax = axes[0]
+    ax.set_title('Cost with iterations')
+    ax.plot(x_num_iter, cost_iter[start::])
+    ax.set_xlabel('num_iter', fontweight='bold')
+    ax.set_ylabel('cost', fontweight='bold')
+    ax.grid(linestyle='--')
+    ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+
+    ax = axes[1]
+    ax.set_title('Fitting by Gradient Descent')
+    ax.scatter(x_train, y_train, s=100, alpha=0.7)
+    ax.plot(x_train, y_pred, label='Gradient Descent')
+    ax.plot(x_train, true_model(x_train), label='true model')
+    ax.set_xlabel(r'$x_n$', fontweight='bold')
+    ax.set_ylabel(r'$y_n$', fontweight='bold')
+    ax.grid(linestyle='--')
+    ax.legend()
+
     plt.show()
 
     t = time.process_time()-t
