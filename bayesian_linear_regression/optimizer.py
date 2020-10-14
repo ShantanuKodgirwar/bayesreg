@@ -1,11 +1,9 @@
 """
 Collection of optimizers
 """
-import numpy as np
 
 from .cost import Cost, LeastSquares, RidgeRegularizer, SumOfCosts
 from .utils import calc_gradient
-
 
 
 class Optimizer:
@@ -62,7 +60,7 @@ class GradientDescent(Optimizer):
         params = model.params
         params_iter = []
         for i in range(self.num_iter):
-            params = params - self.learn_rate * calc_gradient(cost, params)
+            params = params - self.learn_rate * cost.gradient(params)
             params_iter.append(params)
 
         return params, params_iter

@@ -66,8 +66,16 @@ class LeastSquares(GoodnessOfFit):
     model is a Gaussian)
     """
 
-    def _eval(self, residuals):        
+    def _eval(self, residuals):
         return 0.5 * residuals.dot(residuals)
+
+    def gradient(self, params=None):
+
+        if params is not None:
+            self.model.params = params
+
+        X = self.model.compute_design_matrix(self.x)
+        return -X.T.dot(self.residuals)
 
 
 class RidgeRegularizer(Cost):
