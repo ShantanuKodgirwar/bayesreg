@@ -1,9 +1,8 @@
 """
 Collection of optimizers
 """
-
+import numpy as np
 from .cost import Cost, LeastSquares, RidgeRegularizer, SumOfCosts
-from .utils import calc_gradient
 
 
 class Optimizer:
@@ -38,11 +37,21 @@ class GradientDescent(Optimizer):
                 Learning rate for the algorithm
 
         """
+        assert cost.has_gradient
         assert isinstance(cost, LeastSquares)
+
         super().__init__(cost)
 
-        self.learn_rate = learn_rate
+        self._learn_rate = learn_rate
         self.num_iter = num_iter
+
+        @property
+        def learn_rate(self):
+            return self._learn_rate
+
+        @learn_rate.setter
+        def learn_rate(self, learn_rate):
+            self._learn_rate = learn_rate
 
     def run(self):
         """
@@ -58,9 +67,36 @@ class GradientDescent(Optimizer):
         model = cost.model
 
         params = model.params
+
         params_iter = []
         for i in range(self.num_iter):
-            params = params - self.learn_rate * cost.gradient(params)
+            params = params - self._learn_rate * cost.gradient(params)
             params_iter.append(params)
+        return params_iter
 
-        return params, params_iter
+    def barzilai_borwein(self, params_iter):
+        learn_rate = self._learn_rate
+
+        cost = self.cost
+        model = cost.model
+        params = model.params
+
+        params_iter_new = []
+        for i in range(self.num_iter):
+            curr_params = params_iter[i]
+            curr_calc_grad = self.cost.gradient(curr_params)
+
+            if i > 0:
+                prev_params = params_iter[i-1]
+                prev_calc_grad = self.cost.gradient(params_iter[i-1])
+                diff_params = curr_params - prev_params
+                diff_grad = curr_calc_grad - prev_calc_grad
+                learn_rate = np.abs(diff_params.T.dot(diff_grad)) / \
+                                   np.linalg.norm(diff_grad) ** 2
+
+            params = params - learn_rate * self.cost.gradient(params)
+            params_iter_new.append(params)
+
+            return params_iter_new, learn_rate
+
+

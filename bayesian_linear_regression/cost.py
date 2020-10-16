@@ -24,6 +24,13 @@ class Cost:
         msg = 'Needs to be implemented by subclass'
         return NotImplementedError(msg)
 
+    @property
+    def has_gradient(self):
+        return hasattr(self, 'gradient')
+
+    def gradient(self, params):
+        msg = 'Needs to be implemented by subclass'
+        return NotImplementedError(msg)
 
 class GoodnessOfFit(Cost):
     """GoodnessOfFit
@@ -128,6 +135,10 @@ class SumOfCosts(Cost):
 
     def _eval(self, params):
         return np.sum([cost._eval(params) for cost in self._costs])
+
+    @property
+    def has_gradient(self):
+        return all([cost.has_gradient for cost in self])
 
     def __iter__(self):
         return iter(self._costs)
