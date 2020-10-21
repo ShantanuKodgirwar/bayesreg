@@ -34,14 +34,13 @@ def calc_grad_desc(x, y, alpha, num_iter):
     return params_iter, poly(x)
 
 
-def calc_barzilai_borwein(x, y, alpha, num_iter, max_epoch):
+def calc_barzilai_borwein(x, y, alpha, num_iter):
     """calc_barzilai_borwein
 
     Solves the least-squares by gradient descent algorithm
 
     Parameters
     ----------
-    max_epoch
     x : input training/testing set
     y : output training/testing set
     alpha : Learning rate
@@ -55,8 +54,8 @@ def calc_barzilai_borwein(x, y, alpha, num_iter, max_epoch):
     data = np.transpose([x, y])
     poly = reg.Polynomial(np.zeros(n_degree))
     lsq = reg.LeastSquares(data, poly)
-    optimize = reg.GradientDescent(lsq, alpha, num_iter)
-    params = optimize.barzilai_borwein(max_epoch)
+    optimize = reg.BarzilaiBorwein(lsq, alpha, num_iter)
+    params = optimize.run()
     poly.params = params
 
     return poly(x)
@@ -117,6 +116,27 @@ def calc_lsq_estimator(x, y, n_degree):
     return poly(x)
 
 
+def main():
+
+    t = time.process_time()
+    params_iter, y_grad_desc = calc_grad_desc(x_train, y_train, alpha, num_iter)
+    cost_iter = calc_cost_params(x_train, y_train, params_iter)
+    t = time.process_time() - t
+    print('Gradient descent time:', t)
+
+    # run LSQ estimator
+    t2 = time.process_time()
+    y_lsq = calc_lsq_estimator(x_train, y_train, n_degree)
+    t2 = time.process_time() - t2
+    print('LSQ estimator time:', t2)
+
+    t3 = time.process_time()
+    y_grad_bb = calc_barzilai_borwein(x_train, y_train, alpha_init, num_iter_bb)
+    t3 = time.process_time() - t3
+    print('Barzilai-Borwein time :', t3)
+
+    return cost_iter, y_grad_desc, y_lsq, y_grad_bb
+
 if __name__ == '__main__':
     t = time.process_time()
 
@@ -140,31 +160,15 @@ if __name__ == '__main__':
     # training response vector with noise
     y_train = true_model(x_train) + noise_train
 
-    # run gradient descent
+    # parameters for gradient descent method
     alpha = 0.07  # Learning rate
     num_iter = int(0.7e4)  # No. of iterations
 
-    t = time.process_time()
-    params_iter, y_grad_desc = calc_grad_desc(x_train, y_train, alpha, num_iter)
-    cost_iter = calc_cost_params(x_train, y_train, params_iter)
-    t = time.process_time() - t
-    print('Gradient descent time:', t)
-
-    # run LSQ estimator
-    t2 = time.process_time()
-    y_lsq = calc_lsq_estimator(x_train, y_train, n_degree)
-    t2 = time.process_time() - t2
-    print('LSQ estimator time:', t2)
-
-    # run gradient descent with barzilai borwein method
-    num_iter_bb = 1
-    max_epoch = 50
+    # parameters for gradient descent with barzilai borwein method
+    num_iter_bb = 50
     alpha_init = 1e-3
 
-    t3 = time.process_time()
-    y_grad_bb = calc_barzilai_borwein(x_train, y_train, alpha_init, num_iter_bb, max_epoch)
-    t3 = time.process_time() - t3
-    print('barzilai borwein time :', t3)
+    cost_iter, y_grad_desc, y_lsq, y_grad_bb = main()
 
     # %%
     # plot

@@ -2,7 +2,7 @@
 Collection of optimizers
 """
 import numpy as np
-from .cost import Cost, LeastSquares, RidgeRegularizer, SumOfCosts
+from .cost import Cost, LeastSquares
 
 
 class Optimizer:
@@ -45,24 +45,7 @@ class GradientDescent(Optimizer):
         self._learn_rate = learn_rate
         self.num_iter = num_iter
 
-        @property
-        def learn_rate(self):
-            return self._learn_rate
-
-        @learn_rate.setter
-        def learn_rate(self, learn_rate):
-            self._learn_rate = learn_rate
-
     def run(self):
-        """
-
-        Returns
-        -------
-        params: ndarray
-            returns the evaluated parameters
-        params_hist: list
-            returns the parameters for every iteration
-        """
 
         params = self.cost.model.params
         params_iter = []
@@ -71,13 +54,35 @@ class GradientDescent(Optimizer):
             params_iter.append(params)
         return params_iter
 
-    def barzilai_borwein(self, max_epoch):
+
+class BarzilaiBorwein(GradientDescent):
+    """BarzilaiBorwein
+
+    Gradient descent method by determining learn rate using Barzilai Borwein method
+    """
+
+    def __init__(self, cost, learn_rate, num_iter):
+        """
+
+        Parameters
+        ----------
+        cost: Cost of the function passed
+        learn_rate: learn_rate or step size of the gradient descent algorithm
+        num_iter: Number of iterations used for convergence
+        """
+
+        assert cost.has_gradient
+        assert isinstance(cost, LeastSquares)
+
+        super().__init__(cost, learn_rate, num_iter)
+
+    def run(self):
 
         learn_rate = self._learn_rate
         params = self.cost.model.params
 
         learn_rate_iter = []
-        for i in range(max_epoch):
+        for i in range(self.num_iter):
             curr_params = params.copy()
             curr_grad = self.cost.gradient(curr_params)
 
@@ -90,8 +95,7 @@ class GradientDescent(Optimizer):
             prev_params = curr_params
             prev_grad = curr_grad
 
-            for j in range(self.num_iter):
-                params -= learn_rate * self.cost.gradient(curr_params)
+            params -= learn_rate * self.cost.gradient(curr_params)
 
         return params
 
