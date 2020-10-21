@@ -63,40 +63,36 @@ class GradientDescent(Optimizer):
         params_hist: list
             returns the parameters for every iteration
         """
-        cost = self.cost
-        model = cost.model
 
-        params = model.params
-
+        params = self.cost.model.params
         params_iter = []
         for i in range(self.num_iter):
-            params = params - self._learn_rate * cost.gradient(params)
+            params = params - self._learn_rate * self.cost.gradient(params)
             params_iter.append(params)
         return params_iter
 
-    def barzilai_borwein(self, params_iter):
+    def barzilai_borwein(self, max_epoch):
+
         learn_rate = self._learn_rate
+        params = self.cost.model.params
 
-        cost = self.cost
-        model = cost.model
-        params = model.params
-
-        params_iter_new = []
-        for i in range(self.num_iter):
-            curr_params = params_iter[i]
-            curr_calc_grad = self.cost.gradient(curr_params)
+        learn_rate_iter = []
+        for i in range(max_epoch):
+            curr_params = params.copy()
+            curr_grad = self.cost.gradient(curr_params)
 
             if i > 0:
-                prev_params = params_iter[i-1]
-                prev_calc_grad = self.cost.gradient(params_iter[i-1])
                 diff_params = curr_params - prev_params
-                diff_grad = curr_calc_grad - prev_calc_grad
-                learn_rate = np.abs(diff_params.T.dot(diff_grad)) / \
-                                   np.linalg.norm(diff_grad) ** 2
+                diff_grad = curr_grad - prev_grad
+                learn_rate = np.linalg.norm(diff_params) ** 2 / np.dot(diff_params, diff_grad)
+                learn_rate_iter.append(learn_rate)
 
-            params = params - learn_rate * self.cost.gradient(params)
-            params_iter_new.append(params)
+            prev_params = curr_params
+            prev_grad = curr_grad
 
-            return params_iter_new, learn_rate
+            for j in range(self.num_iter):
+                params -= learn_rate * self.cost.gradient(curr_params)
+
+        return params
 
 
