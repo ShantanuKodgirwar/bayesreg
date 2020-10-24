@@ -35,7 +35,7 @@ def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
     return poly(x), cost_iter
 
 
-def calc_barzilai_borwein(x, y, learn_rate, num_iter):
+def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
     """calc_barzilai_borwein
 
     Solves the least-squares by gradient descent algorithm
@@ -56,10 +56,10 @@ def calc_barzilai_borwein(x, y, learn_rate, num_iter):
     poly = reg.Polynomial(np.zeros(n_degree))
     lsq = reg.LeastSquares(data, poly)
     optimize = reg.BarzilaiBorwein(lsq, learn_rate, num_iter)
-    params = optimize.run()
+    params, cost_iter_bb = optimize.run(cost_expected=None)
     poly.params = params
 
-    return poly(x)
+    return poly(x), cost_iter_bb
 
 
 def calc_lsq_estimator(x, y, n_degree):
@@ -92,7 +92,6 @@ def main():
 
     t = time.process_time()
     y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected)
-    # cost_iter = calc_cost_params(x_train, y_train, params_iter)
     t = time.process_time() - t
     print('Gradient descent time:', t)
 
@@ -103,11 +102,11 @@ def main():
     print('LSQ estimator time:', t2)
 
     t3 = time.process_time()
-    y_grad_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb)
+    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb)
     t3 = time.process_time() - t3
     print('Barzilai-Borwein time :', t3)
 
-    return cost_iter, y_grad_desc, y_lsq, y_grad_bb
+    return cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb
 
 
 if __name__ == '__main__':
@@ -140,22 +139,22 @@ if __name__ == '__main__':
     num_iter = int(1e4)  # No. of iterations
 
     # parameters for gradient descent with barzilai borwein method
-    num_iter_bb = 50
+    num_iter_bb = int(1e2)
     init_learn_rate = 1e-3
 
-    cost_iter, y_grad_desc, y_lsq, y_grad_bb = main()
+    cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb = main()
 
     # %% plot
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig, axes = plt.subplots(2, 2, figsize=(20, 15))
     plt.subplots_adjust(hspace=0.3)
 
     start = int(100)
     stop = len(cost_iter)
     x_num_iter = np.linspace(start, stop, stop - start)
 
-    ax = axes[0]
+    ax = axes[0, 0]
     ax.set_title('Cost for Gradient Descent')
     ax.plot(x_num_iter, cost_iter[start::])
     ax.axhline(cost_expected, ls='--', color='r')
@@ -164,7 +163,7 @@ if __name__ == '__main__':
     ax.grid(linestyle='--')
     ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
-    ax = axes[1]
+    ax = axes[0, 1]
     ax.set_title('Gradient Descent')
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
     ax.plot(x_train, y_grad_desc, label='Gradient Descent', linewidth=4.0)
@@ -175,8 +174,21 @@ if __name__ == '__main__':
     ax.grid(linestyle='--')
     ax.legend()
 
-    ax = axes[2]
-    ax.set_title('Barzilai Borwein')
+    start = int(0)
+    stop = len(cost_iter_bb)
+    x_num_iter = np.linspace(start, stop, stop - start)
+
+    ax = axes[1, 0]
+    ax.set_title('Cost for Barzilai-Borwein')
+    ax.plot(x_num_iter, cost_iter_bb[start::])
+    ax.axhline(cost_expected, ls='--', color='r')
+    ax.set_xlabel('num_iter', fontweight='bold')
+    ax.set_ylabel('cost', fontweight='bold')
+    ax.grid(linestyle='--')
+    ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+
+    ax = axes[1, 1]
+    ax.set_title('Barzilai-Borwein')
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
     ax.plot(x_train, y_grad_bb, label='Barzilai Borwein', linewidth=4.0)
     ax.plot(x_train, y_lsq, label='LSQ estimator')

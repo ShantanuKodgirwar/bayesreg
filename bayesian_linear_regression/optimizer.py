@@ -90,9 +90,10 @@ class BarzilaiBorwein(GradientDescent):
 
         super().__init__(cost, learn_rate, num_iter)
 
-    def run(self):
+    def run(self, cost_expected=None):
 
         params = self.cost.model.params
+        cost_iter = []
         for i in range(self.num_iter):
             curr_params = params.copy()
             curr_grad = self.cost.gradient(curr_params)
@@ -104,7 +105,13 @@ class BarzilaiBorwein(GradientDescent):
             prev_grad = curr_grad
 
             params -= self.learn_rate * self.cost.gradient(curr_params)
+            data = np.transpose([self.cost.x, self.cost.y])
+            poly = Polynomial(params)
+            lsq = LeastSquares(data, poly)
+            cost = lsq._eval(lsq.residuals)
+            cost_iter.append(cost)
+
         print('Iterations for barzilai-borwein are: ', self.num_iter)
-        return params
+        return params, cost_iter
 
 
