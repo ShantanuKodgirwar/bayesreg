@@ -32,6 +32,7 @@ class Cost:
         msg = 'Needs to be implemented by subclass'
         return NotImplementedError(msg)
 
+
 class GoodnessOfFit(Cost):
     """GoodnessOfFit
 
