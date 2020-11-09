@@ -42,6 +42,7 @@ def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
 
     Parameters
     ----------
+    cost_expected: A suitable minimum value of a cost function
     x : input training/testing set
     y : output training/testing set
     learn_rate : Learning rate
@@ -56,7 +57,7 @@ def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
     poly = reg.Polynomial(np.zeros(n_degree))
     lsq = reg.LeastSquares(data, poly)
     optimize = reg.BarzilaiBorwein(lsq, learn_rate, num_iter)
-    params, cost_iter_bb = optimize.run(cost_expected=None)
+    params, cost_iter_bb = optimize.run(cost_expected)
     poly.params = params
 
     return poly(x), cost_iter_bb
@@ -102,7 +103,8 @@ def main():
     print('LSQ estimator time:', t2)
 
     t3 = time.process_time()
-    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb)
+    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb,
+                                                    cost_expected=None)
     t3 = time.process_time() - t3
     print('Barzilai-Borwein time :', t3)
 
@@ -139,7 +141,7 @@ if __name__ == '__main__':
     num_iter = int(1e4)  # No. of iterations
 
     # parameters for gradient descent with barzilai borwein method
-    num_iter_bb = int(1e2)
+    num_iter_bb = int(1.1e2)
     init_learn_rate = 1e-3
 
     cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb = main()
