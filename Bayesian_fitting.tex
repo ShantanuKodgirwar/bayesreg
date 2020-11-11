@@ -1,5 +1,8 @@
 \documentclass[11pt]{article}
-
+\usepackage[immediate]{silence}
+\WarningFilter[temp]{latex}{Command} % silence the warning
+\usepackage{sectsty}
+\DeactivateWarningFilters[temp] % So nothing unrelated gets silenced
 \usepackage{geometry}
 \geometry{a4paper}
 
@@ -17,7 +20,6 @@
 \geometry{a4paper}
 
 \usepackage{url} 
-\usepackage{sectsty} 
 \usepackage{helvet}
 \usepackage[stable]{footmisc}
 \usepackage{enumerate}
@@ -36,11 +38,13 @@
 \newcommand{\eye}{\bm{I}}
 \newcommand{\mean}[1]{\mathbb{E}\left[#1\right]}
 \newcommand{\mle}[1]{{#1}_{\text{\tiny ML}}}
+\newcommand{\map}[1]{{#1}_{\text{\tiny MAP}}}
 \newcommand\given[1][]{\:#1\vert\:}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 
-\title{Bayesian Curve Fitting with Gaussian Distribution}
-\date{\nonumber}
+\title{Bayesian Inference for the Gaussian Distribution}
+\date{\today}
+\author{Shantanu Kodgirwar}
 
 \begin{document}
 
@@ -49,7 +53,6 @@
 \section{Maximum likelihood estimation}
 
 Input vectors are given as $\bm{x} = (x_1, \ldots, x_N)^T$ and the output/target variables as $\bm{t} = (t_1, \ldots, t_N)^T$ and the polynomial coefficients as $\bm{w} = (w_1, \ldots, w_M)^T$.
-
 \begin{eqnarray}
         t_{i}
         &=& \sum_{i=1}^N y(x_i, \bm{w})\\
@@ -65,26 +68,27 @@ n_i \sim \mathcal{N}(0, \sigma^2)
 \end{equation}
 
 The values of $t$, given the values of $x$ follows a Gaussian distribution.
-
 \begin{equation}
-    t_i \sim \mathcal{N}(y_i, y(x_i, \bm{w}))
+    t_i \sim \mathcal{N}(y(x_i, \bm{w}), \sigma^2)
+\end{equation}
+
+The likelihood function is defined as follows.
+\begin{equation}
+    p(t_i \given \bm{X}, \bm{w}, \sigma^2) = \sqrt{\frac{1}{2\pi\sigma^2}}\exp{\Big[-\frac{1}{2\sigma^2} \left(t_i - (\bm{X}\bm{w})_i\right)^2\Big]}
 \end{equation}
 
 A precision parameter $\beta$ is defined which is given as $\beta^{-1} = \sigma^2$. 
-Thus, we have the following likelihood function for every target value given as
-
+Thus, we have the following modified likelihood function as follows.
 \begin{equation}
     p(t_i \given \bm{X}, \bm{w}, \beta) = \sqrt{\frac{\beta}{2\pi}}\exp{\Big[-\frac{\beta}{2} \left(t_i - (\bm{X}\bm{w})_i\right)^2\Big]}
 \end{equation}
 
 Assuming the data is drawn independently, the likelihood is the joint probability given as the product of individual marginal probabilities. It is also assumed the value of $\beta$ is known or assumed. 
-
 \begin{equation}\label{eqn:likelihood}
     p(\bm{t} \given \bm{X}, \bm{w}, \beta) = \prod_{i=1}^N p(t_i \given \bm{X}, \bm{w}, \beta)
 \end{equation}
 
 The log likelihood of equation \ref{eqn:likelihood} is given as 
-
 \begin{eqnarray} \label{eqn:log_likelihood}
     \ln p(\bm{t} \given \bm{X}, \bm{w}, \beta) 
     &=&
@@ -94,8 +98,9 @@ The log likelihood of equation \ref{eqn:likelihood} is given as
     &=&
     \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \sum_{i=1}^N \left(t_i - (\bm{X}\bm{w})_i\right)^2 \\
     &=&
-    \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2 
+    \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 
 \end{eqnarray}
+
 The posterior probability to determine the parameters is given as the product of likelihood function and prior.
 \begin{equation} 
     p(\bm{w} \given \bm{t}, \bm{X}, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\bm{w})
@@ -103,13 +108,12 @@ The posterior probability to determine the parameters is given as the product of
 The value of the prior $p(\bm{w}) = 1$. 
 
 By maximizing the negative likelihood (or posterior distribution with prior as one) with respect to $\bm{w}$,
-
 \begin{eqnarray}
     \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
     \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{t} \given \bm{X}, \bm{w}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2  \right\}
+    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2  \right\}
     &\overset{!}{=} 0& \\
     \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \left(\bm{t} - \bm{X}\bm{w}\right)^T \left(\bm{t} - \bm{X}\bm{w}\right) \right\}
     &\overset{!}{=} 0& \\
@@ -117,29 +121,28 @@ By maximizing the negative likelihood (or posterior distribution with prior as o
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Therefore, $\bm{w}_{ML}$ is evaluated.
+Therefore, $\mle{\bm{w}}$ is evaluated.
 \begin{equation} \label{eqn:w_ML}
-    \bm{w}_{ML} = (\bm{X}^T \bm{X})^{-1} \bm{X}^T \bm{t}
+    \mle{\bm{w}} = (\bm{X}^T \bm{X})^{-1} \bm{X}^T \bm{t}
 \end{equation}
 
-It can be seen that the maximum likelihood results into least square estimator. We can similarly estimate $\beta_{ML}$ by maximizing the posterior with respect to $\beta$. The known value of $W_{ML}$ can now be utilized here.
+It can be seen that the maximum likelihood results into least square estimator. We can similarly estimate $\mle{\beta}$ by maximizing the posterior with respect to $\beta$. The known value of $\mle{\bm{w}}$ can now be utilized here.
 
-\newpage
 Taking the log likelihood in equation \ref{eqn:log_likelihood}, the following could be shown.
 \begin{eqnarray}
-    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{w}_{ML} \given \bm{t}, \bm{X}, \beta)} \right\} 
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\mle{\bm{w}} \given \bm{t}, \bm{X}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{t} \given \bm{X}, \bm{w}_{ML}, \beta)} \right\} 
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{t} \given \bm{X}, \mle{\bm{w}}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \beta} \left\{\frac{N}{2}\ln{\beta} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w}_{ML})_i\right)}^2  \right\}
+    \frac{\partial }{\partial \beta} \left\{-\frac{N}{2}\ln{\beta} + \frac{\beta}{2} \norm{\bm{t} - \bm{X}\mle{\bm{w}}}^2  \right\}
     &\overset{!}{=} 0& \\
-    \frac{N}{\beta} - \norm{\left(t_i - (\bm{X}\bm{w}_{ML})_i\right)}^2
+    \norm{\bm{t} - \bm{X} \mle{\bm{w}}}^2 - \frac{N}{\beta}
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Therefore, the value $\beta_{ML}$ is determined to be 
+Therefore, the value $\mle{\beta}$ is determined to be 
 \begin{equation} \label{eqn:beta_ML}
-    \beta_{ML}^{-1} = \frac{1}{N}\norm{\left(t_i - (\bm{X}\bm{w}_{ML})_i\right)}^2
+    \mle{\beta} = \frac{N}{\norm{\bm{t} - \bm{X}\mle{\bm{w}}}^2}
 \end{equation}
 
 \section{Maximum a posteriori estimation}
@@ -149,12 +152,8 @@ In the case of maximum a posteriori (MAP) estimation, the distribution of prior 
 \subsection{Gaussian distribution of prior}
 
 The prior distribution is given as follows
-\begin{eqnarray}
-    p(\bm{w} \given \alpha) \propto p(\alpha \given \bm{w})p(\bm{w})
-\end{eqnarray}
-However, $p(\bm{w} \given \alpha)$ is known as follows.
 \begin{equation} \label{prior_alpha}
-    p(\bm{w} \given \alpha) = \left( \frac{\alpha}{2\pi}\right)^{\left( M+1\right)/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
+    p(\bm{w} \given \alpha) = \mathcal N(\bm 0, \eye /\alpha) = \left( \frac{\alpha}{2\pi}\right)^{M/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
 \end{equation}
 
 The posterior distribution is shown as follows.
@@ -172,12 +171,11 @@ The log of the posterior is given as follows
 
 The log likelihood is known from equation \ref{eqn:log_likelihood}. Therefore, 
 \begin{equation} \label{eqn:log_posterior}
-    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2 + \frac{M+1}{2} \ln{\left( \frac{\alpha}{2\pi} \right)} - \frac{\alpha}{2}\norm{\bm{w}}^2
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 + \frac{M}{2} \ln{\left( \frac{\alpha}{2\pi} \right)} - \frac{\alpha}{2}\norm{\bm{w}}^2
 \end{equation}
 
-\newpage
-Maximizing the negative log of posterior with respect to $\bm{w}$.
 
+Maximizing the negative log of posterior with respect to $\bm{w}$.
 \begin{eqnarray}
     \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \right\} 
     &\overset{!}{=} 0& \\
@@ -187,55 +185,52 @@ Maximizing the negative log of posterior with respect to $\bm{w}$.
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Let us assign a regularization parameter $\lambda = \alpha/\beta$. Therefore, the value of parameter using maximum a posteriori estimation $\bm{w}_{MAP}$ is given as
+Let us assign a regularization parameter $\lambda = \alpha/\beta$. Therefore, the value of parameter using maximum a posteriori estimation $\map{\bm{w}}$ is given as
 \begin{equation} \label{eqn:w_map}
-    w_{MAP} = \left(\bm{X}^T\bm{X} + \lambda\bm{I}\right)^{-1}\bm{X}^T\bm{t}
+    \map{\bm{w}} = \left(\bm{X}^T\bm{X} + \lambda\eye\right)^{-1}\bm{X}^T\bm{t}
 \end{equation}
 
 \subsection{Jeffreys prior}
 \subsubsection{Evaluation for precision parameter $\bm{\beta}$}
+
 Jeffreys prior is given as
 \begin{equation}
     p(\sigma) = \frac{1}{\sigma} 
 \end{equation}
-Under the assumption of $\beta^{-1} = \sigma^2$,
-\begin{equation}
-    p(\beta) = \beta^{-1/2}
-\end{equation}
-Therefore, the prior distribution $p(\sigma \given \bm{w})$ is proportional to Jeffreys prior.
-\begin{equation}
-    p(\beta \given \bm{w}) \propto p(\bm{w}\given \beta)p(\beta)
-\end{equation}
-where, $p(\bm{w}\given \sigma)$ will be some initial distribution (example: a vector of ones of size M+1). 
+
+Parameter transformation: $\sigma\to\beta=1/\sigma^2$
+  \begin{eqnarray*}
+    p_\beta(\beta) &=& p_\sigma(\sigma)\left|_{\sigma=1/\sqrt{\beta}}\right. \left|\frac{d\sigma}{d\beta} \right| \\
+    &\propto& \sqrt{\beta} \frac{1}{1/\sigma^3}\left|_{\sigma=1/\sqrt\beta}\right. \\
+    &=& \sqrt{\beta} \sigma^3\left|_{\sigma=1/\sqrt\beta}\right. \\
+    &=& \sqrt{\beta} \beta^{-3/2} = 1 / \beta
+  \end{eqnarray*}
 
 Therefore,
-\begin{equation}
-    p(\beta \given \bm{w}) = \beta^{-1/2}
+\begin{equation} \label{eqn:beta_jeffreys}
+    p(\beta) = \frac{1}{\beta}
 \end{equation}
 
 The posterior distribution is given as
 \begin{equation}
-    p(\bm{w} \given \bm{t}, \bm{X}, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\bm{w}\given \beta)
+    p(\bm{w} \given \bm{t}, \bm{X}, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\beta)
 \end{equation}
 
 The log likelihood of the posterior distribution is given as
-\begin{equation} \label{eqn:log_posterior_jeffreys}
-    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} = \ln{p(\bm{t} \given \bm{X}, \bm{w}, \beta)} + \ln{p(\bm{w}\given \beta)}
+\begin{equation} 
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} = \ln{p(\bm{t} \given \bm{X}, \bm{w}, \beta)} + \ln{p(\beta)}
 \end{equation}
 
-\newpage
-Using equation \ref{eqn:log_likelihood} to give the log likelihood, the above equation \ref{eqn:log_posterior_jeffreys} would be as follows
-
+Using equation \ref{eqn:log_likelihood} to give the log likelihood, the above equation would be as follows
 \begin{equation} \label{eqn:log_posterior_jeffreys}
-    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2 - \frac{1}{2}\ln{\beta}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 - \ln{\beta}
 \end{equation}
 
 Maximizing the log posterior with respect to $\bm{w}$,
-
 \begin{eqnarray}
     \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2  \right\}
+    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2  \right\}
     &\overset{!}{=} 0& \\
     \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \left(\bm{t} - \bm{X}\bm{w}\right)^T \left(\bm{t} - \bm{X}\bm{w}\right) \right\}
     &\overset{!}{=} 0& \\
@@ -243,29 +238,27 @@ Maximizing the log posterior with respect to $\bm{w}$,
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Therefore, we find that, $\bm{w_{MAP}}$ is
-
+Therefore, we find that, $\map{\bm{w}}$ is
 \begin{equation}
-    \bm{w}_{MAP} = (\bm{X}^T \bm{X})^{-1} \bm{X}^T \bm{t}
+    \map{\bm{w}} = (\bm{X}^T \bm{X})^{-1} \bm{X}^T \bm{t}
 \end{equation}
 
-We can see that $w_{MAP} = w_{ML}$ (refer equation \ref{eqn:w_ML}). 
+We can see that $\map{\bm{w}} = \mle{\bm w}$ (refer equation \ref{eqn:w_ML}). 
 
 Now, maximizing the log posterior with respect to $\beta$, equation \ref{eqn:log_posterior_jeffreys} is used.
-
 \begin{eqnarray}
-    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{w}_{MAP} \given \bm{t}, \bm{X}, \beta)} \right\} 
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\map{\bm{w}} \given \bm{t}, \bm{X}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \beta} \left\{\frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2  \right\}
-    - \frac{\partial }{\partial \beta} \left\{\frac{N}{2}\ln{\beta} \right\} + \frac{\partial }{\partial \beta} \left\{\frac{1}{2} \ln{\beta} \right\}
+    \frac{\partial }{\partial \beta} \left\{\frac{\beta}{2} \norm{\bm{t} - \bm{X}\map{\bm{w}}}^2 \right\}
+    - \frac{\partial }{\partial \beta} \left\{\frac{N}{2}\ln{\beta} \right\} + \frac{\partial }{\partial \beta} \left\{ \ln{\beta} \right\}
     &\overset{!}{=} 0& \\
-    \frac{N}{\beta} -\frac{1}{\beta} - \frac{1}{2} \norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2
+    \frac{1}{2} \norm{\bm{t} - \bm{X}\map{\bm{w}}}^2 - \frac{N}{2\beta} + \frac{1}{\beta}
     &\overset{!}{=} 0&
 \end{eqnarray}
 
 Therefore, 
-\begin{equation}
-    \beta_{MAP}^{-1} = \frac{1}{\left(N-1\right)}\norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2
+\begin{equation} \label{beta_map}
+    \map{\beta} = \frac{N-2}{\norm{\bm{t} - \bm{X}\map{\bm{w}}}^2}
 \end{equation}
 
 \subsubsection{Evaluation for hyperparameter $\bm{\alpha}$}
@@ -275,39 +268,37 @@ Jeffreys prior for the hyperparameter $\alpha$ is given as follows,
     p(\alpha) = \frac{1}{\alpha}
 \end{equation}
 
-The prior distribution $p(\alpha \given \bm{w})$ is given as follows,
-\begin{equation}
-    p(\alpha \given \bm{w}) \propto p(\bm{w} \given \alpha) p(\alpha)
+The joint distribution $p(w,\alpha)$ is given as follows
+\begin{equation} \label{eqn:joint_alpha}
+    p(\bm{w}, \alpha) = p(\bm{w} \given \alpha)p(\alpha)
 \end{equation}
 
-The distribution $p(\bm{w} \given \alpha)$ is known from equation \ref{prior_alpha}. Therefore, the distribution for $p(\alpha \given \bm{w})$ is as follows
+The distribution $p(\bm{w} \given \alpha)$ is known from equation \ref{prior_alpha}. Therefore, the joint probability $p(w, \alpha)$ is evaluated as follows.
 \begin{eqnarray}
-    p(\alpha \given \bm{w}) 
+    p(\bm{w}, \alpha) 
     &=&
-    \left( \frac{\alpha}{2\pi}\right)^{\left( M+1\right)/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}} \times \frac{1}{\alpha} \\
-    p(\alpha \given \bm{w}) 
+    \left( \frac{\alpha}{2\pi}\right)^{M/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}} \times \frac{1}{\alpha} \\
+    p(\bm{w}, \alpha) 
     &=& 
-    \left( \frac{\alpha}{2\pi}\right)^{\left( M\right)/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
+    \left( \frac{\alpha}{2\pi}\right)^{\left( M-2\right)/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
 \end{eqnarray}
 
-The posterior distribution is given as
+The posterior distribution is given as follows.
 \begin{equation}
-    p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \alpha, \beta) p(\alpha \given \bm{w})
+    p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \alpha, \beta) p(\bm{w}, \alpha) p(\beta)
 \end{equation}
 
-The log likelihood of the posterior distribution is
+The distribution of $p(\beta)$ is known from equation \ref{eqn:beta_jeffreys} to be $p(\beta) = 1/\beta$. Therefore, the log of the posterior distribution is
 \begin{equation}
-    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \ln{p(\bm{t} \given \bm{X}, \bm{w}, \alpha, \beta)} + \ln{p(\alpha \given \bm{w})}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \ln{p(\bm{t} \given \bm{X}, \bm{w}, \alpha, \beta)} + \ln{p(\bm{w}, \alpha)} + \ln{p(\beta)}
 \end{equation}
 
-Using equation \ref{eqn:log_likelihood} to give the log likelihood and the log of the prior $p(\alpha \given \bm{w})$, the equation becomes
-
+Evaluating the above equation results to the following.
 \begin{equation} \label{eqn:log_posterior_alpha}
-    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w})_i\right)}^2 + \frac{M}{2} \ln{\alpha} -\frac{M}{2}\ln{2\pi} - \frac{\alpha}{2}\norm{\bm{w}}^2
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \frac{N}{2}\ln{\beta}  - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 + \frac{\left(M-2\right)}{2} \ln{\alpha} - \frac{\alpha}{2}\norm{\bm{w}}^2 - \ln{\beta}
 \end{equation}
 
 Initially, maximizing the posterior (refer equation \ref{eqn:log_posterior_alpha}) with respect to $\bm{w}$, we get
-
 \begin{eqnarray}
     \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \right\} 
     &\overset{!}{=} 0& \\
@@ -317,46 +308,97 @@ Initially, maximizing the posterior (refer equation \ref{eqn:log_posterior_alpha
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Therefore, $w_{MAP}$ is the same as per the equation \ref{eqn:w_map}.
+Given the regularization parameter $\lambda = \alpha/\beta$, $\map{\bm{w}}$ is the same as per the equation \ref{eqn:w_map}.
 \begin{equation}
-    w_{MAP} = \left(\bm{X}^T\bm{X} + \lambda\bm{I}\right)^{-1}\bm{X}^T\bm{t}
+    \map{\bm{w}} = \left(\bm{X}^T\bm{X} + \lambda\eye\right)^{-1}\bm{X}^T\bm{t}
 \end{equation}
 
-where, $\lambda = \alpha/\beta$.
-
-\newpage
 Finally, maximizing posterior(refer equation \ref{eqn:log_posterior_alpha}) with respect to $\beta$, we get the following
-
 \begin{eqnarray}
-    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{w}_{MAP} \given \bm{t}, \bm{X}, \alpha_{MAP}, \beta)} \right\} 
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\map{\bm{w}} \given \bm{t}, \bm{X}, \alpha, \beta)} \right\} 
     &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \beta} \left\{\frac{N}{2}\ln{\beta} - \frac{\beta}{2} \norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2  \right\}
+    \frac{\partial }{\partial \beta} \left\{\frac{\beta}{2} \norm{\bm{t} - \bm{X}\map{\bm{w}}}^2 \right\}
+    - \frac{\partial }{\partial \beta} \left\{\frac{N}{2}\ln{\beta} \right\} + \frac{\partial }{\partial \beta} \left\{ \ln{\beta} \right\}
     &\overset{!}{=} 0& \\
-    \frac{N}{\beta} - \norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2
-    &\overset{!}{=} 0& 
+    \frac{1}{2} \norm{\bm{t} - \bm{X}\map{\bm{w}}}^2 - \frac{N}{2\beta} + \frac{1}{\beta}
+    &\overset{!}{=} 0&
 \end{eqnarray}
 
-Therefore, the value $\beta_{MAP}$ is determined to be 
+Therefore, $\map{\beta}$ is as follows.
 \begin{equation}
-    \beta_{MAP}^{-1} = \frac{1}{N}\norm{\left(t_i - (\bm{X}\bm{w}_{MAP})_i\right)}^2
+    \map{\beta} = \frac{N-2}{\norm{\bm{t} - \bm{X}\map{\bm{w}}}^2}
 \end{equation}
 
-It can also be seen that $\beta_{MAP} = \beta_{ML}$ (refer equation \ref{eqn:beta_ML}).
+It can also be seen that $\map{\beta} = \mle{\beta}$ (refer equation \ref{eqn:beta_ML}).
 
-Maximizing the posterior (refer equation \ref{eqn:log_posterior_alpha}) with respect to $\alpha$, we get
-
+Maximizing the posterior (refer equation \ref{eqn:log_posterior_alpha}) with respect to $\alpha$, we get the following.
 \begin{eqnarray}
-    \frac{\partial }{\partial  \alpha} \left\{ -\ln{p(\bm{w}_{MAP} \given \bm{t}, \bm{X}, \alpha, \beta)} \right\}
+    \frac{\partial }{\partial  \alpha} \left\{ -\ln{p(\map{\bm{w}} \given \bm{t}, \bm{X}, \alpha, \beta)} \right\}
     &\overset{!}{=} 0&  \\
-    \norm{\bm{w}_{MAP}}^2 - \frac{M}{\alpha}
+    \norm{\map{\bm{w}}}^2 - \frac{M-2}{\alpha}
     &\overset{!}{=} 0& 
 \end{eqnarray}
 
-Therefore, $\alpha_{MAP}$ is given as follows.
-\begin{equation}
-    \alpha_{MAP} = \frac{M}{\norm{\bm{w}_{MAP}}^2}
+Therefore, $\map{\alpha}$ is given as follows.
+\begin{equation}\label{alpha_map}
+    \map{\alpha} = \frac{M-2}{\norm{\map{\bm{w}}}^2}
 \end{equation}
 
+\section{Gamma Distribution}
 
+The likelihood function for the target values given $\beta$ (precision parameter) can be written as 
+\begin{eqnarray}
+    p(\bm{t} \given \bm{X}, \bm{w}, \beta) &=& \prod_{i=1}^N \mathcal{N}(t_i \given \bm{X}, \bm{w}, \beta^{-1}) \\
+    &\propto& \beta^{\frac{N}{2}}\exp\left\{-\frac{\beta}{2} \sum_{i=1}^N(t_i - (\bm{X}\bm{w})_i)^2 \right\}
+\end{eqnarray}
 
+The corresponding conjugate prior\footnote{posterior distribution is in the same probability distribution family as the prior distribution} should be proportional to the product of the power of $\beta$ and the exponential of the linear function of $\beta$. 
+
+This corresponds to the gamma distribution which is given as follows.
+\begin{equation} \label{gamma_dist}
+    \text{Gam}(\beta \given a, b) = \frac{b^a}{\Gamma(a)}\beta^{a-1}\exp{(-b\beta)}
+\end{equation}
+
+where, $\Gamma(a)$ is a gamma function that ensures the gamma distribution is properly normalized, $a$ is called as the shape parameter and $b$ is called as the rate parameter.  
+
+The expectation $\mean{\beta}$ is given as follows.
+\begin{equation}
+    \mean{\beta} = \frac{a}{b}
+\end{equation}
+
+The mode $\text{mode}[\beta]$ which is equivalent to maximizing the posterior with respect to $\beta$ is given as follows.
+\begin{equation} \label{mode}
+    \text{mode}[\beta] = \frac{a-1}{b}
+\end{equation}
+
+Let us consider the posterior distribution considering the jeffreys prior for $p(\beta)$ as given in equation \ref{eqn:beta_jeffreys}.
+\begin{eqnarray}
+    p(\bm{w} \given \bm{t}, \bm{X}, \beta) 
+    &\propto& p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\beta) \\
+    &\propto& \beta^{\frac{N}{2}}\exp\left\{-\frac{\beta}{2} \sum_{i=1}^N(t_i - (\bm{X}\bm{w})_i)^2 \right\} \times \frac{1}{\beta} \\
+    &\propto& \beta^{\frac{N}{2}-1}\exp\left\{-\frac{\beta}{2} \sum_{i=1}^N(t_i - (\bm{X}\bm{w})_i)^2 \right\}
+\end{eqnarray}
+
+By comparing this to the gamma distribution in equation \ref{gamma_dist}, $\text{mode}[\beta \given \bm{t}, \bm{X}, \bm{w}]$ is as follows
+\begin{equation}
+    \text{mode}[\beta \given \bm{t}, \bm{X}, \bm{w}] = \frac{N-2}{\norm{\bm{t} - \bm{X}\bm{w}}^2}
+\end{equation}
+
+This is equivalent to $\map{\beta}$ from the result in equation \ref{beta_map}. Similarly, $\mean{\beta \given \bm{t}, \bm{X}, \bm{w}}$ is given as follows.
+\begin{equation}
+    \mean{\beta \given \bm{t}, \bm{X}, \bm{w}} = \frac{N}{\norm{\bm{t} - \bm{X}\bm{w}}^2}
+\end{equation}
+
+This can also be shown to hold true for the joint distribution $p(\bm{w}, \alpha)$ in equation \ref{eqn:joint_alpha}.
+\begin{equation}
+    p(\bm{w},\alpha) \propto \alpha^{\frac{M}{2}-1}\exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
+\end{equation}
+\begin{equation}
+    \text{mode}[\alpha \given \bm{w}] = \frac{M-2}{\norm{\map{\bm{w}}}^2}
+\end{equation}
+
+This is same as $\alpha_{MAP}$ in equation \ref{alpha_map}. Similarly $\mean{\alpha \given \bm{w}}$ is
+\begin{equation}
+    \mean{\alpha \given \bm{w}} = \frac{M}{\norm{\map{\bm{w}}}^2}
+\end{equation}
 \end{document}
