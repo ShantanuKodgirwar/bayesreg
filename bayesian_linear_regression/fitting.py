@@ -60,6 +60,8 @@ class SVDEstimator(LSQEstimator):
 class RidgeEstimator(Fitter):
     """RidgeEstimator
 
+    W = (x.T*X + lambda*I)^{-1}*X.T*t
+
     Generalized Ridge regularizer estimator (modified LSQEstimator) that 
     minimizes sum-of-squares residuals
     """
@@ -89,3 +91,4 @@ class RidgeEstimator(Fitter):
                 b += X.T.dot(cost.y)
 
         return np.linalg.inv(A) @ b
+

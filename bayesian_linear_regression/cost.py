@@ -52,6 +52,9 @@ class GoodnessOfFit(Cost):
     def y(self):
         return self.data[:, 1]
 
+    def __len__(self):
+        return len(self.x)
+
     @property
     def residuals(self):
         return self.y - self.model(self.x)
@@ -78,12 +81,40 @@ class LeastSquares(GoodnessOfFit):
         return 0.5 * residuals.dot(residuals)
 
     def gradient(self, params=None):
-
         if params is not None:
             self.model.params = params
 
         X = self.model.compute_design_matrix(self.x)
         return -X.T.dot(self.residuals)
+
+
+class PrecisionParameter(GoodnessOfFit):
+    """PrecisionParameter
+
+    beta  = (N-2) / || t - Xw ||**2
+
+    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
+    precision parameter "beta" is defined based on gaussian model.
+    """
+
+    def _eval(self, residuals):
+        return len(self.x) - 2/np.linalg.norm(residuals)**2
+
+
+class HyperParameter(Cost):
+    """HyperParameter
+
+    alpha = (M-2) / ||w||**2
+
+    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
+    hyperparameter "alpha" is defined based on gaussian model.
+    """
+
+    def __call__(self, params):
+        return self._eval(params)
+
+    def _eval(self, params):
+        return len(params) - 2/np.linalg.norm(params)**2
 
 
 class RidgeRegularizer(Cost):
@@ -93,9 +124,11 @@ class RidgeRegularizer(Cost):
     penalizing term 'ridge_param' and general regulazer term 'A'
     """
 
-    def __init__(self, model, ridge_param, A=None):
+    def __init__(self, model, ridge_param=None, A=None):
         super().__init__(model)
-        self._ridge_param = ridge_param
+
+        if ridge_param is not None:
+            self._ridge_param = ridge_param
 
         if A is None:
             A = np.eye(len(model))
@@ -112,6 +145,15 @@ class RidgeRegularizer(Cost):
     @property
     def ridge_param(self):
         return self._ridge_param
+
+    @ridge_param.setter
+    def ridge_param(self, vals):
+        try:
+            alpha, beta = vals
+        except ValueError:
+            raise ValueError("Pass iterable that includes alpha and beta values")
+        else:
+            self._ridge_param = alpha/beta
 
     def _eval(self, residuals):
         params = self.model.params

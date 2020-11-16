@@ -25,19 +25,15 @@ class GradientDescent(Optimizer):
     """GradientDescent
     
     Implements the batch gradient descent algorithm for parameter estimation
+
+    Parameters
+    ----------
+    num_iter : Iterations for the gradient descent
+    learn_rate : Learning rate for the algorithm
+    cost_expected: Expected value of cost based (default:None)
     """
 
     def __init__(self, cost, learn_rate, num_iter):
-        """
-
-        Parameters
-        ----------
-        num_iter : int
-                Iterations for the gradient descent
-        learn_rate : float
-                Learning rate for the algorithm
-
-        """
         assert cost.has_gradient
         assert isinstance(cost, LeastSquares)
 
