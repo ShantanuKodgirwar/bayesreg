@@ -2,8 +2,8 @@
 Estimating the results of maximum posterior under bayesian inference.
 """
 import numpy as np
-from .cost import Cost, PrecisionParameter, HyperParameter
-from .fitting import Fitter, LSQEstimator, RidgeEstimator
+from .Estimator import Estimator, LSQEstimator, RidgeEstimator, PrecisionEstimator, \
+    HyperparameterEstimator
 
 
 class MaximumPosterior:
@@ -14,8 +14,7 @@ class MaximumPosterior:
     """
 
     def __init__(self, fitter):
-        assert isinstance(fitter, Fitter)
-
+        assert isinstance(fitter, Estimator)
         self.fitter = fitter
 
     def run(self, *args):
@@ -37,10 +36,10 @@ class MAPJeffreysPrior(MaximumPosterior):
     def __init__(self, ridge_estimator, hyper_parameter, precision_parameter):
         assert isinstance(ridge_estimator, RidgeEstimator)
 
-        assert isinstance(hyper_parameter, HyperParameter)
+        assert isinstance(hyper_parameter, HyperparameterEstimator)
         self.hyper_parameter = hyper_parameter
 
-        assert isinstance(precision_parameter, PrecisionParameter)
+        assert isinstance(precision_parameter, PrecisionEstimator)
         self.precision_parameter = precision_parameter
 
         super().__init__(ridge_estimator)
@@ -51,10 +50,14 @@ class MAPJeffreysPrior(MaximumPosterior):
         log_posterior_list = []
         for i in range(num_iter):
             curr_params = params.copy()
-            alpha = self.hyper_parameter(curr_params)
-            beta = self.precision_parameter(curr_params)
             params = self.fitter.run()
-            log_posterior = np.log(alpha)+np.log(beta)
+            alpha = self.hyper_parameter.run()
+            beta = self.precision_parameter.run()
+            #ridge_param = alpha/beta
+            if False:
+                self.fitter.cost[0].precision = beta
+                self.fitter.cost[1].ridge_param = alpha
+            log_posterior = -(np.log(alpha)+np.log(beta))
             log_posterior_list.append(log_posterior)
 
         return alpha, beta, params, log_posterior_list

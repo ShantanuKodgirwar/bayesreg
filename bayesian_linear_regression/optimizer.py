@@ -3,7 +3,6 @@ Collection of optimizers
 """
 import numpy as np
 from .cost import Cost, LeastSquares
-from .model import Polynomial
 
 
 class Optimizer:
@@ -46,14 +45,11 @@ class GradientDescent(Optimizer):
 
         params = self.cost.model.params
         if cost_expected is not None:
-            data = np.transpose([self.cost.x, self.cost.y])
 
             cost_iter = []
             for i in range(self.num_iter):
                 params = params - self.learn_rate * self.cost.gradient(params)
-                poly = Polynomial(params)
-                lsq = LeastSquares(data, poly)
-                cost = lsq._eval(lsq.residuals)
+                cost = self.cost(params)
                 cost_iter.append(cost)
                 if cost <= cost_expected:
                     print('Iterations for gradient descent are: ', i+1)
@@ -87,27 +83,31 @@ class BarzilaiBorwein(GradientDescent):
         super().__init__(cost, learn_rate, num_iter)
 
     def run(self, cost_expected=None):
+        num_iter = self.num_iter
+        learn_rate = self.learn_rate
 
         params = self.cost.model.params
+        prev_params = None
+        prev_grad = None
+
         cost_iter = []
-        for i in range(self.num_iter):
+        for i in range(num_iter):
             curr_params = params.copy()
             curr_grad = self.cost.gradient(curr_params)
+
             if i > 0:
                 diff_params = curr_params - prev_params
                 diff_grad = curr_grad - prev_grad
-                self.learn_rate = np.linalg.norm(diff_params) ** 2 / np.dot(diff_params, diff_grad)
+                learn_rate = np.linalg.norm(diff_params) ** 2 / np.dot(diff_params, diff_grad)
+
             prev_params = curr_params
             prev_grad = curr_grad
 
-            params -= self.learn_rate * self.cost.gradient(curr_params)
-            data = np.transpose([self.cost.x, self.cost.y])
-            poly = Polynomial(params)
-            lsq = LeastSquares(data, poly)
-            cost = lsq._eval(lsq.residuals)
-            cost_iter.append(cost)
+            params -= learn_rate * self.cost.gradient(curr_params)
+            cost_val = self.cost(params)
+            cost_iter.append(cost_val)
 
-        print('Iterations for barzilai-borwein are: ', self.num_iter)
+        print('Iterations for barzilai-borwein are: ', num_iter)
         return params, cost_iter
 
 

@@ -14,14 +14,13 @@ def calc_ridge_jeffreys(x, y, n_degree, num_iter):
     """
     data = np.transpose([x, y])  # define the data that is passed
     poly = reg.Polynomial(np.ones(n_degree))  # model is defined that is used
-    alpha = reg.HyperParameter(poly)  # hyperparameter based on Jeffreys prior
-    beta = reg.PrecisionParameter(data, poly)  # precision parameter based on Jeffreys prior
+    hyper_param = reg.HyperParameter(poly)  # hyperparameter based on Jeffreys prior
+    prec_param = reg.PrecisionParameter(data, poly)  # precision parameter based on Jeffreys prior
     lsq = reg.LeastSquares(data, poly)  # least-squares as cost function
-    ridge = reg.RidgeRegularizer(poly, 0)  # Regularizer term; pass ridge_param = 0
+    ridge = reg.RidgeRegularizer(poly, 1)  # Regularizer term; pass ridge_param = 0
     total_cost = reg.SumOfCosts(poly, lsq, ridge)  # lsq+ridge to give the modified cost function
     ridge_estimator = reg.RidgeEstimator(total_cost)  # estimate the modified error function
-    alpha, beta, params, log_posterior = reg.MAPJeffreysPrior(ridge_estimator, alpha, beta).run(num_iter)
-    ridge.ridge_param = (alpha, beta)  # setter values
+    alpha, beta, params, log_posterior = reg.MAPJeffreysPrior(ridge_estimator, hyper_param, prec_param).run(num_iter)
     poly.params = params
 
     return poly(x), log_posterior
@@ -82,11 +81,11 @@ if __name__ == '__main__':
     num_iter = np.linspace(1, num_iter, num_iter)
 
     ax = axes[1]
-    ax.set_title(r'$\ln{w, \alpha,  \beta}$ vs iterations')
+    ax.set_title(r'Log Posterior vs iterations')
     ax.plot(num_iter, log_posterior_train, label='training error')
     ax.plot(num_iter, log_posterior_test, label='testing error', color='r')
-    ax.set_xlabel('ln $\lambda$')
-    ax.set_ylabel('$E_{RMS}$')
+    ax.set_xlabel('iterations')
+    ax.set_ylabel(r'$ln({w}, \alpha, \beta)$')
     ax.set_ylim(0., 1.)
     ax.grid(linestyle='--')
     ax.legend(prop={'size': 12})

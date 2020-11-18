@@ -35,7 +35,7 @@ print('computation times: ', t, t2)
 class PolyFitter(reg.LSQEstimator):
 
     def run(self, *args):
-        params = np.polyfit(self.cost.x, self.cost.y,
+        params = np.polyfit(self.cost.data.input, self.cost.data.output,
                             len(self.cost.model) - 1)
 
         warnings.simplefilter("ignore", np.RankWarning)
@@ -48,8 +48,8 @@ class PolyFitter2(reg.LSQEstimator):
 
     def run(self, *args):
         model = self.cost.model
-        X = model.compute_design_matrix(self.cost.x)
-        y = self.cost.y
+        X = model.compute_design_matrix(self.cost.data.input)
+        y = self.cost.data.output
 
         inv = np.linalg.inv(X.T.dot(X) + self.eps * np.eye(len(model)))
 
@@ -70,7 +70,7 @@ def fit_models(fitter, n_params, test_set=None):
         cost.model = model
         params = fitter.run()
         model.params = params
-        train_error.append(reg.rmse(cost.y, model(cost.x)))
+        train_error.append(reg.rmse(cost.data.output, model(cost.data.input)))
         if test_set is not None:
             test_error.append(reg.rmse(test_set[:, 1],
                                        model(test_set[:, 0])))
@@ -114,8 +114,8 @@ Y = true_model(X)
 params_true = np.polyfit(x, y, n_params - 1)[::-1]
 model.params = params_true
 
-data = np.transpose([x, y])
-lsq = reg.LeastSquares(data, model)
+data = reg.Data(np.transpose([x, y]))
+lsq = reg.LeastSquares(model, data)
 fitter = reg.LSQEstimator(lsq)
 fitter = PolyFitter2(lsq)
 fitter2 = PolyFitter(lsq)

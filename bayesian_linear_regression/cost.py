@@ -3,6 +3,7 @@ Collection of classes used for evaluation of cost/error
 """
 import numpy as np
 from .model import LinearModel
+from .data import Data
 
 
 class Cost:
@@ -11,14 +12,14 @@ class Cost:
     Scoring model quality
     """
 
-    def __init__(self, model, **kwargs):
+    def __init__(self, model, *args):
+        # self.residuals = None
         assert isinstance(model, LinearModel)
-
         self.model = model
+        self.data = None
 
-        for A, ridge_param in kwargs.items():
-            self.A = A
-            self.ridge_param = ridge_param
+    def __call__(self, params):
+        return self._eval(params)
 
     def _eval(self, params):
         msg = 'Needs to be implemented by subclass'
@@ -40,24 +41,17 @@ class GoodnessOfFit(Cost):
     that explains the data best
     """
 
-    def __init__(self, data, model):
+    def __init__(self, model, data, precision=1.):
         super().__init__(model)
-        self.data = np.array(data)
 
-    @property
-    def x(self):
-        return self.data[:, 0]
+        assert isinstance(data, Data)
+        self.data = data
 
-    @property
-    def y(self):
-        return self.data[:, 1]
-
-    def __len__(self):
-        return len(self.x)
+        self.precision = float(precision)
 
     @property
     def residuals(self):
-        return self.y - self.model(self.x)
+        return self.data.output - self.model(self.data.input)
 
     def __call__(self, params=None):
         if params is not None:
@@ -78,43 +72,17 @@ class LeastSquares(GoodnessOfFit):
     """
 
     def _eval(self, residuals):
-        return 0.5 * residuals.dot(residuals)
+        beta = self.precision
+        N = len(self.data.input)
+        # Eq. (12)
+        return 0.5 * beta * residuals.dot(residuals) - 0.5 * N * np.log(beta)
 
     def gradient(self, params=None):
         if params is not None:
             self.model.params = params
 
-        X = self.model.compute_design_matrix(self.x)
-        return -X.T.dot(self.residuals)
-
-
-class PrecisionParameter(GoodnessOfFit):
-    """PrecisionParameter
-
-    beta  = (N-2) / || t - Xw ||**2
-
-    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
-    precision parameter "beta" is defined based on gaussian model.
-    """
-
-    def _eval(self, residuals):
-        return len(self.x) - 2/np.linalg.norm(residuals)**2
-
-
-class HyperParameter(Cost):
-    """HyperParameter
-
-    alpha = (M-2) / ||w||**2
-
-    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
-    hyperparameter "alpha" is defined based on gaussian model.
-    """
-
-    def __call__(self, params):
-        return self._eval(params)
-
-    def _eval(self, params):
-        return len(params) - 2/np.linalg.norm(params)**2
+        X = self.model.compute_design_matrix(self.data.input)
+        return -self.precision * X.T.dot(self.residuals)
 
 
 class RidgeRegularizer(Cost):
@@ -147,15 +115,10 @@ class RidgeRegularizer(Cost):
         return self._ridge_param
 
     @ridge_param.setter
-    def ridge_param(self, vals):
-        try:
-            alpha, beta = vals
-        except ValueError:
-            raise ValueError("Pass iterable that includes alpha and beta values")
-        else:
-            self._ridge_param = alpha/beta
+    def ridge_param(self, ridge_param):
+        self._ridge_param = ridge_param
 
-    def _eval(self, residuals):
+    def _eval(self, params):
         params = self.model.params
         return 0.5 * self._ridge_param * params.dot(self.A.dot(params))
 

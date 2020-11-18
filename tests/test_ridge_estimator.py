@@ -32,9 +32,9 @@ def calc_ridge_estimator(x, y, n_degree, ridge_param):
     """
     Implements the necessary classes to predict values of response vector
     """
-    data = np.transpose([x, y])
+    data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(data, poly)
+    lsq = reg.LeastSquares(poly, data)
     ridge = reg.RidgeRegularizer(poly, ridge_param)
     total_cost = reg.SumOfCosts(poly, lsq, ridge)
     estimator = reg.RidgeEstimator(total_cost)
@@ -62,11 +62,11 @@ def calc_rmse_ridge(x_train, y_train, x_test, y_test, n_degree, lambda_logspace)
     train_error = []
     test_error = []
 
-    data = np.transpose([x_train, y_train])
+    data = reg.Data(np.transpose([x_train, y_train]))
     poly = reg.Polynomial(np.ones(n_degree))
 
     for ridge_param in lambda_logspace:
-        lsq = reg.LeastSquares(data, poly)
+        lsq = reg.LeastSquares(poly, data)
         ridge = reg.RidgeRegularizer(poly, ridge_param)
         total_cost = reg.SumOfCosts(poly, lsq, ridge)
         estimator = reg.RidgeEstimator(total_cost)

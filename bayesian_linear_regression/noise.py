@@ -3,6 +3,7 @@ Various noise models
 """
 import numpy as np
 
+
 class NoiseModel:    
     """NoiseModel
 
