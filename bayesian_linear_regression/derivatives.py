@@ -30,7 +30,7 @@ class TestFunction:
     def hessian(self, x):
         assert self.dim == len(x) 
         g = self.gradient(x)
-        return (-  np.multiply.outer(g,g) + \
+        return (- np.multiply.outer(g, g) + \
                 np.eye(self.dim) * np.cos(2*(x+self.phases))) / (self(x) + 1e-10)
 
     
@@ -84,6 +84,7 @@ def calc_hessian(f, x, eps=1e-7):
 
     return H
 
+
 def test_derivatives(d=2):
     
     x = np.random.random(d)
@@ -121,7 +122,6 @@ if not False:
     x = np.linspace(-1., 1., 200) * 1e-9
     grid = np.array(np.meshgrid(x, x))
     grid = np.transpose(grid.reshape(2, -1)) 
-
 
     d = 2
     func = TestFunction(0*np.random.random(d))

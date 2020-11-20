@@ -2,8 +2,9 @@
 Estimating the results of maximum posterior under bayesian inference.
 """
 import numpy as np
-from .Estimator import Estimator, LSQEstimator, RidgeEstimator, PrecisionEstimator, \
+from .estimator import Estimator, RidgeEstimator, PrecisionEstimator, \
     HyperparameterEstimator
+from .cost import LeastSquares, RidgeRegularizer
 
 
 class MaximumPosterior:
@@ -13,9 +14,9 @@ class MaximumPosterior:
     estimation
     """
 
-    def __init__(self, fitter):
-        assert isinstance(fitter, Estimator)
-        self.fitter = fitter
+    def __init__(self, estimator):
+        assert isinstance(estimator, Estimator)
+        self.estimator = estimator
 
     def run(self, *args):
         msg = 'Needs to be implemented by a subclass'
@@ -33,34 +34,43 @@ class MAPJeffreysPrior(MaximumPosterior):
     ridge_estimator: Estimated ridge regression
     """
 
-    def __init__(self, ridge_estimator, hyper_parameter, precision_parameter):
+    def __init__(self, ridge_estimator, alpha_estimator, beta_estimator):
         assert isinstance(ridge_estimator, RidgeEstimator)
 
-        assert isinstance(hyper_parameter, HyperparameterEstimator)
-        self.hyper_parameter = hyper_parameter
+        assert isinstance(alpha_estimator, HyperparameterEstimator)
+        self.alpha_estimator = alpha_estimator
 
-        assert isinstance(precision_parameter, PrecisionEstimator)
-        self.precision_parameter = precision_parameter
+        assert isinstance(beta_estimator, PrecisionEstimator)
+        self.beta_estimator = beta_estimator
 
         super().__init__(ridge_estimator)
 
     def run(self, num_iter):
-        params = self.hyper_parameter.model.params
 
         log_posterior_list = []
+        states = []
+
         for i in range(num_iter):
-            curr_params = params.copy()
-            params = self.fitter.run()
-            alpha = self.hyper_parameter.run()
-            beta = self.precision_parameter.run()
-            #ridge_param = alpha/beta
-            if False:
-                self.fitter.cost[0].precision = beta
-                self.fitter.cost[1].ridge_param = alpha
-            log_posterior = -(np.log(alpha)+np.log(beta))
+            params = self.estimator.run()
+            # if self.alpha_estimator.is_enabled:
+            alpha = self.alpha_estimator.run()
+            beta = self.beta_estimator.run()
+            self.estimator.cost.model.params = params
+            self.alpha_estimator.cost.hyperparameter = alpha
+            self.beta_estimator.cost.precision = beta
+
+            states.append((params.copy(), beta, alpha))
+
+            eps = 1e-3 # needs to be the same as eps used in estimators
+            a_alpha, b_alpha = eps, eps
+            a_beta, b_beta = eps, eps
+            log_likelihood_prior = - self.estimator.cost(params)
+            log_hyperpriors = (a_alpha - 1) * np.log(alpha) - b_alpha * alpha
+            log_hyperpriors += (a_beta - 1) * np.log(beta) - b_beta * beta
+            log_posterior = log_likelihood_prior + 0 * log_hyperpriors
             log_posterior_list.append(log_posterior)
 
-        return alpha, beta, params, log_posterior_list
+        return log_posterior_list, states
 
 
 

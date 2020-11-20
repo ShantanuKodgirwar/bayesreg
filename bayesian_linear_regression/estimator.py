@@ -60,7 +60,7 @@ class SVDEstimator(LSQEstimator):
 class RidgeEstimator(Estimator):
     """RidgeEstimator
 
-    W = (x.T*X + lambda*I)^{-1}*X.T*t
+    W = (beta * X.T*X + alpha*A)^{-1}*X.T*t
 
     Generalized Ridge regularizer estimator (modified LSQEstimator) that 
     minimizes sum-of-squares residuals
@@ -75,26 +75,22 @@ class RidgeEstimator(Estimator):
 
         super().__init__(sum_of_costs)
 
-    def run(self, ridge_param=None):
+    def run(self):
 
-        A = 0.
+        a = 0.
         b = 0.
 
         for cost in self.cost:
 
-            if ridge_param is not None:
-                if isinstance(cost, RidgeRegularizer):
-                    cost.ridge_param = ridge_param  # alpha later...
-
             if isinstance(cost, RidgeRegularizer):
-                A += cost.ridge_param * cost.A
+                a += cost.hyperparameter * cost.A
 
             else:
                 X = cost.model.compute_design_matrix(cost.data.input)
-                A += cost.precision * X.T.dot(X)
+                a += cost.precision * X.T.dot(X)
                 b += cost.precision * X.T.dot(cost.data.output)
 
-        return np.linalg.inv(A) @ b
+        return np.linalg.inv(a) @ b
 
 
 class PrecisionEstimator(Estimator):
@@ -107,15 +103,17 @@ class PrecisionEstimator(Estimator):
     """
 
     def __init__(self, cost):
-        assert isinstance(cost, GoodnessOfFit)
+        assert isinstance(cost, LeastSquares)
 
         super().__init__(cost)
 
     def run(self):
         data = self.cost.data
-        cost = self.cost
-
-        return (len(data.input) - 2)/np.linalg.norm(cost.residuals)**2
+        residuals = self.cost.residuals
+        # coming from Gamma prior on alpha assuming identical shape and rate
+        # if set to zero, we are back to Jeffreys' prior
+        eps = 1e-3
+        return (len(data.input) - 2 + 2*eps) / (np.linalg.norm(residuals)**2 + 2*eps)
 
 
 class HyperparameterEstimator(Estimator):
@@ -133,4 +131,7 @@ class HyperparameterEstimator(Estimator):
 
     def run(self):
         params = self.cost.model.params
-        return (len(params) - 2) / np.linalg.norm(params) ** 2
+        # coming from Gamma prior on alpha assuming identical shape and rate
+        # if set to zero, we are back to Jeffreys' prior
+        eps = 1e-3
+        return (len(params) - 2 + 2 * eps) / (np.linalg.norm(params) ** 2 + 2 * eps)
