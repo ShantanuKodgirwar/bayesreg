@@ -149,7 +149,7 @@ if __name__ == '__main__':
     # %% plot
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)
-    fig, axes = plt.subplots(2, 2, figsize=(20, 15))
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
     plt.subplots_adjust(hspace=0.3)
 
     start = int(100)

@@ -6,28 +6,36 @@ Created on Tue Sep 29 16:42:23 2020
 @author: shantanu
 """
 import numpy as np
+from scipy.optimize import rosen
+
 
 class BaseClass:
     pass
+
 
 class Mixin1(object):
     def test(self):
         print("Mixin1")
 
+
 class Mixin2(object):
     def test(self):
         print("Mixin2")
 
+
 class MyClass(BaseClass, Mixin1, Mixin2):
     pass
+
 
 class Cost:
     @property
     def has_gradient(self):
         return hasattr(self, 'gradient')
 
+
 class GoodnessOfFit(Cost):
     pass
+
 
 class LeastSquares(GoodnessOfFit):
     
@@ -49,8 +57,10 @@ class SumOfCosts(Cost):
     def __iter__(self):
         return iter(self._costs)
 
+
 class Fitter:
     pass
+
 
 class GradientDescent(Fitter):
     
@@ -60,7 +70,6 @@ class GradientDescent(Fitter):
         
         super().__init__(cost)
 
-from scipy.optimize import rosen, rosen_der
 
 if __name__ == '__main__':
     
