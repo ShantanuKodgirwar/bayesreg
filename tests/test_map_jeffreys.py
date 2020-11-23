@@ -22,6 +22,8 @@ def calc_map_jeffreys(input_vec, output_vec, n_degree, num_iter):
     log_posterior, states = max_posterior.run(num_iter)
     params, beta, alpha = list(map(np.array, zip(*states)))
     poly.params = params[-1, :]
+    # TODO: Making this more scalable to not use so many commands (A task under design pattern; check
+    #  Scikit-Learn for comparison)
 
     return poly(input_vec), log_posterior, alpha, beta, params
 

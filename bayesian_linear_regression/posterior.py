@@ -31,7 +31,9 @@ class MAPJeffreysPrior(MaximumPosterior):
 
     Parameters
     ----------
-    ridge_estimator: Estimated ridge regression
+    ridge_estimator: Estimated ridge regression that uses total sum (LSQ+Ridge)
+    alpha_estimator: hyperparameter estimated as an analytical result under Jeffreys Prior
+    beta_estimator: Precision parameter estimated as an analytical result under Jeffreys Prior
     """
 
     def __init__(self, ridge_estimator, alpha_estimator, beta_estimator):
@@ -44,7 +46,8 @@ class MAPJeffreysPrior(MaximumPosterior):
         self.beta_estimator = beta_estimator
 
         super().__init__(ridge_estimator)
-
+        # TODO: A cleaner way for a constructor?!
+        
     def run(self, num_iter):
 
         log_posterior_list = []
@@ -52,7 +55,7 @@ class MAPJeffreysPrior(MaximumPosterior):
 
         for i in range(num_iter):
             params = self.estimator.run()
-            # if self.alpha_estimator.is_enabled:
+            # TODO: Enabling self.alpha_estimator externally?!
             alpha = self.alpha_estimator.run()
             beta = self.beta_estimator.run()
             self.estimator.cost.model.params = params
@@ -61,6 +64,7 @@ class MAPJeffreysPrior(MaximumPosterior):
 
             states.append((params.copy(), beta, alpha))
 
+            # TODO: Gamma Prior class to separate out 'eps' and a better structure
             eps = 1e-3 # needs to be the same as eps used in estimators
             a_alpha, b_alpha = eps, eps
             a_beta, b_beta = eps, eps

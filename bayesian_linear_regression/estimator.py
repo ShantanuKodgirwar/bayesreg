@@ -92,7 +92,8 @@ class RidgeEstimator(Estimator):
 
         return np.linalg.inv(a) @ b
 
-
+# TODO: Possibly create a single class instead of PrecisionEstimator and
+#  HyperparameterEstimator as they have a similar form
 class PrecisionEstimator(Estimator):
     """PrecisionEstimator
 

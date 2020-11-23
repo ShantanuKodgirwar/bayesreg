@@ -29,7 +29,7 @@ class GradientDescent(Optimizer):
     ----------
     num_iter : Iterations for the gradient descent
     learn_rate : Learning rate for the algorithm
-    cost_expected: Expected value of cost based (default:None)
+    cost_expected: Expected value of cost based (default:None) to stop the loop
     """
 
     def __init__(self, cost, learn_rate, num_iter):
@@ -85,15 +85,16 @@ class BarzilaiBorwein(GradientDescent):
     def run(self, cost_expected=None):
         num_iter = self.num_iter
         learn_rate = self.learn_rate
+        cost = self.cost
+        params = cost.model.params
 
-        params = self.cost.model.params
         prev_params = None
         prev_grad = None
-
         cost_iter = []
+
         for i in range(num_iter):
             curr_params = params.copy()
-            curr_grad = self.cost.gradient(curr_params)
+            curr_grad = cost.gradient(curr_params)
 
             if i > 0:
                 diff_params = curr_params - prev_params
@@ -103,8 +104,8 @@ class BarzilaiBorwein(GradientDescent):
             prev_params = curr_params
             prev_grad = curr_grad
 
-            params -= learn_rate * self.cost.gradient(curr_params)
-            cost_val = self.cost(params)
+            params -= learn_rate * cost.gradient(curr_params)
+            cost_val = cost(params)
             cost_iter.append(cost_val)
 
         print('Iterations for barzilai-borwein are: ', num_iter)

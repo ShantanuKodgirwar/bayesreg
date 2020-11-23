@@ -264,7 +264,7 @@ Therefore,
 \subsubsection{Evaluation for hyperparameter $\bm{\alpha}$}
 
 Jeffreys prior for the hyperparameter $\alpha$ is given as follows,
-\begin{equation}
+\begin{equation} \label{eqn:alpha_jeffreys}
     p(\alpha) = \frac{1}{\alpha}
 \end{equation}
 
@@ -401,4 +401,63 @@ This is same as $\alpha_{MAP}$ in equation \ref{alpha_map}. Similarly $\mean{\al
 \begin{equation}
     \mean{\alpha \given \bm{w}} = \frac{M}{\norm{\map{\bm{w}}}^2}
 \end{equation}
+
+\subsection{Priors on Jeffreys Prior (Hyperpriors) with Gamma Distribution}
+
+Jeffreys priors are given as $p(\alpha) = \alpha^{-1}$ and $p(\beta) = \beta^{-1}$ for hyperparameter $\alpha$ (refer equation \ref{eqn:alpha_jeffreys}) and precision parameter $\beta$ (refer equation \ref{eqn:beta_jeffreys}) respectively. 
+
+From the gamma distribution in equation \ref{gamma_dist}, a prior distribution $p(\alpha \given a_{\alpha}, b_{\alpha})$ can be given as follows.
+\begin{equation} \label{gamma_alpha}
+    p(\alpha \given a_{\alpha}, b_{\alpha}) =  \frac{b_{\alpha}^{a_{\alpha}}}{\Gamma(a_{\alpha})}\alpha^{a_{\alpha}-1}\exp{(-b_{\alpha}\alpha)}
+\end{equation}
+
+Similarly for $p(\beta \given a_{\beta}, b_{\beta})$ can be given as follows.
+\begin{equation}\label{gamma_beta}
+    p(\beta \given a_{\beta}, b_{\beta}) =  \frac{b_{\beta}^{a_{\beta}}}{\Gamma(a_{\beta})}\beta^{a_{\beta}-1}\exp{(-b_{\beta}\beta)}
+\end{equation}
+
+In the special case when $a_{\alpha}=0, b_{\alpha}=0, a_{\beta} = 0, b_{\beta}=0$. The gamma distribution above results to Jeffreys priors $p(\alpha)$ and $p(\beta)$. 
+
+The posterior distribution $p(\alpha \given a_{\alpha}, b_{\alpha}, \bm{w})$ is therefore,
+\begin{eqnarray} \label{eqn:posterior_gamma_alpha}
+    p(\alpha \given a_{\alpha}, b_{\alpha}, \bm{w}) 
+    &=& p(\bm{w} \given \alpha)p(\alpha \given a_{\alpha}, b_{\alpha})\\
+    &=& \left( \frac{\alpha}{2\pi}\right)^{M/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}\frac{b_{\alpha}^{a_{\alpha}}}{\Gamma(a_{\alpha})}\alpha^{a_{\alpha}-1}\exp{(-b_{\alpha}\alpha)}
+\end{eqnarray}
+
+Similarly, the posterior distribution $p(\beta \given a_{\beta}, b_{\beta}, \bm{w})$
+\begin{eqnarray}\label{eqn:posterior_gamma_beta}
+    p(\beta \given a_{\beta}, b_{\beta}, \bm{w}) 
+    &=& p(\bm{w} \given \beta)p(\beta \given a_{\beta}, b_{\beta})\\
+    &=& \left( \frac{\beta}{2\pi}\right)^{N/2}\exp\left\{-\frac{\beta}{2}\norm{\bm{t}-\bm{X}\bm{w}}^2 \right\}\frac{b_{\beta}^{a_{\beta}}}{\Gamma(a_{\beta})}\beta^{a_{\beta}-1}\exp{(-b_{\beta}\beta)}
+\end{eqnarray}
+
+Initially, maximizing log posterior from equation \ref{eqn:posterior_gamma_alpha} with respect to alpha.
+\begin{eqnarray}
+    \frac{\partial }{\partial  \alpha} \left\{ -\ln{p(\alpha \given a_{\alpha}, b_{\alpha}, \bm{w})} \right\}
+    &\overset{!}{=} 0&  \\
+    \frac{\alpha}{2}\norm{\bm{w}}^2 - \frac{M}{2}\ln{\alpha} - \left( a_{\alpha} - 1 \right)\ln{\alpha} + b_{\alpha}\alpha
+    &\overset{!}{=} 0&
+\end{eqnarray}
+
+Therefore, $\alpha_{MAP}$ is given as 
+\begin{equation} \label{eqn:alpha_map_gamma}
+    \alpha_{MAP} = \frac{M-2 + 2a_{\alpha}}{\norm{\bm{w}}^2+2b_{\alpha}}
+\end{equation}
+
+In the special case, when $a_{\alpha} = 0$ and $b_{\alpha} = 0$, the above equation is equal to \ref{alpha_map}.
+
+Similarly, maximizing log posterior from equation \ref{eqn:posterior_gamma_beta} with respect to beta,
+\begin{eqnarray}
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\beta \given a_{\beta}, b_{\beta}, \bm{w})} \right\}
+    &\overset{!}{=} 0&  \\
+    \frac{\beta}{2}\norm{\bm{t}-\bm{X}\bm{w}}^2 - \frac{N}{2}\ln{\beta} - \left( a_{\beta} - 1 \right)\ln{\beta} + b_{\beta}\beta
+    &\overset{!}{=} 0&
+\end{eqnarray}
+
+Therefore, $\beta_{MAP}$ is given as follows
+\begin{equation}
+    \beta_{MAP} = \frac{N-2 + 2a_{\beta}}{\norm{\bm{t}-\bm{X}\bm{w}}^2+2b_{\beta}}
+\end{equation}
+In the special case, $a_{\beta} = 0$ and $b_{\beta} = 0$, the above equation is equal to \ref{beta_map}.
 \end{document}
