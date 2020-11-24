@@ -356,7 +356,7 @@ The corresponding conjugate prior\footnote{posterior distribution is in the same
 
 This corresponds to the gamma distribution which is given as follows.
 \begin{equation} \label{gamma_dist}
-    \text{Gam}(\beta \given a, b) = \frac{b^a}{\Gamma(a)}\beta^{a-1}\exp{(-b\beta)}
+    \text{Gam}\left(\beta \given a, b\right) = \frac{b^a}{\Gamma(a)}\beta^{a-1}\exp{(-b\beta)}
 \end{equation}
 
 where, $\Gamma(a)$ is a gamma function that ensures the gamma distribution is properly normalized, $a$ is called as the shape parameter and $b$ is called as the rate parameter.  
@@ -366,12 +366,12 @@ The expectation $\mean{\beta}$ is given as follows.
     \mean{\beta} = \frac{a}{b}
 \end{equation}
 
-The mode $\text{mode}[\beta]$ which is equivalent to maximizing the posterior with respect to $\beta$ is given as follows.
+The mode, $\text{mode}\left[\beta\right]$ which is equivalent to maximizing the posterior with respect to $\beta$ is given as follows.
 \begin{equation} \label{mode}
-    \text{mode}[\beta] = \frac{a-1}{b}
+    \text{mode}\left[\beta\right] = \frac{a-1}{b}
 \end{equation}
 
-Let us consider the posterior distribution considering the jeffreys prior for $p(\beta)$ as given in equation \ref{eqn:beta_jeffreys}.
+Let us consider the posterior distribution considering the Jeffreys prior for $p(\beta)$ as given in equation \ref{eqn:beta_jeffreys}.
 \begin{eqnarray}
     p(\bm{w} \given \bm{t}, \bm{X}, \beta) 
     &\propto& p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\beta) \\
@@ -379,9 +379,9 @@ Let us consider the posterior distribution considering the jeffreys prior for $p
     &\propto& \beta^{\frac{N}{2}-1}\exp\left\{-\frac{\beta}{2} \sum_{i=1}^N(t_i - (\bm{X}\bm{w})_i)^2 \right\}
 \end{eqnarray}
 
-By comparing this to the gamma distribution in equation \ref{gamma_dist}, $\text{mode}[\beta \given \bm{t}, \bm{X}, \bm{w}]$ is as follows
+By comparing this to the gamma distribution in equation \ref{gamma_dist}, $\text{mode}\left[\beta \given \bm{t}, \bm{X}, \bm{w}\right]$ is as follows
 \begin{equation}
-    \text{mode}[\beta \given \bm{t}, \bm{X}, \bm{w}] = \frac{N-2}{\norm{\bm{t} - \bm{X}\bm{w}}^2}
+    \text{mode}\left[\beta \given \bm{t}, \bm{X}, \bm{w}\right] = \frac{N-2}{\norm{\bm{t} - \bm{X}\bm{w}}^2}
 \end{equation}
 
 This is equivalent to $\map{\beta}$ from the result in equation \ref{beta_map}. Similarly, $\mean{\beta \given \bm{t}, \bm{X}, \bm{w}}$ is given as follows.
@@ -394,7 +394,7 @@ This can also be shown to hold true for the joint distribution $p(\bm{w}, \alpha
     p(\bm{w},\alpha) \propto \alpha^{\frac{M}{2}-1}\exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
 \end{equation}
 \begin{equation}
-    \text{mode}[\alpha \given \bm{w}] = \frac{M-2}{\norm{\map{\bm{w}}}^2}
+    \text{mode}\left[\alpha \given \bm{w}\right] = \frac{M-2}{\norm{\map{\bm{w}}}^2}
 \end{equation}
 
 This is same as $\alpha_{MAP}$ in equation \ref{alpha_map}. Similarly $\mean{\alpha \given \bm{w}}$ is
@@ -460,4 +460,40 @@ Therefore, $\beta_{MAP}$ is given as follows
     \beta_{MAP} = \frac{N-2 + 2a_{\beta}}{\norm{\bm{t}-\bm{X}\bm{w}}^2+2b_{\beta}}
 \end{equation}
 In the special case, $a_{\beta} = 0$ and $b_{\beta} = 0$, the above equation is equal to \ref{beta_map}.
+
+Under the assumption that $a_{\alpha} = b_{\alpha} = a_{\beta} = b_{\beta} = \epsilon$, expectation, variance and mode can be given as follows.
+
+\begin{eqnarray}
+    \mean{\alpha}
+    &=& \frac{a_{\alpha}}{b_{\alpha}} = 1
+\end{eqnarray}
+\begin{eqnarray}
+    \text{var} \left[\alpha\right]
+    &=& \frac{a_{\alpha}}{b_{\alpha}^2} = \frac{1}{\epsilon}
+\end{eqnarray}
+\begin{eqnarray}
+    \text{mode}\left[\alpha\right] &=& \frac{a_{\alpha}-1}{b_{\alpha}} = \frac{\epsilon-1}{\epsilon}
+\end{eqnarray}
+
+The results are similar to $\mean{\beta}$, $\text{var}\left[\beta\right]$ and $\text{mode}\left[\beta\right]$.
+
+If the value of $\sigma$ is known, $a_{\beta}$ and $b_{\beta}$ can be estimated.
+\begin{eqnarray}
+    \mean{\beta} &=& \frac{a_{\beta}}{b_{\beta}} = \frac{1}{\sigma^2}
+\end{eqnarray}
+
+The $\text{var}\left[\beta\right]$ is also known. Let us assume $\text{var}\left[\beta\right] = \varepsilon$.
+\begin{eqnarray}
+    \text{var}\left[\beta\right]
+    &=& \mathbb{E}\big[\beta^2\big] - \mathbb{E}\big[\beta\big]^2 \\
+    &=& \frac{a_{\beta}}{b_{\beta}} = \varepsilon
+\end{eqnarray}
+
+Therefore this results to the following.
+\begin{equation}
+    a_{\beta} = \frac{1}{\varepsilon\sigma^4}
+\end{equation}
+\begin{equation}
+    b_{\beta} = \frac{1}{\varepsilon\sigma^2}
+\end{equation}
 \end{document}

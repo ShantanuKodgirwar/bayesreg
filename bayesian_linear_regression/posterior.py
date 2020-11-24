@@ -64,7 +64,8 @@ class MAPJeffreysPrior(MaximumPosterior):
 
             states.append((params.copy(), beta, alpha))
 
-            # TODO: Gamma Prior class to separate out 'eps' and a better structure
+            # TODO: Gamma Prior class to separate out 'eps', setting a value of mode
+            #  and a better structure
             eps = 1e-3 # needs to be the same as eps used in estimators
             a_alpha, b_alpha = eps, eps
             a_beta, b_beta = eps, eps
