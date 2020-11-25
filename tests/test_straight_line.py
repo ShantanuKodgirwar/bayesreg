@@ -21,7 +21,7 @@ data = reg.Data(np.transpose([x, y+noise]))
 
 # fit criterion
 
-lsq = reg.LeastSquares(line, data)
+lsq = reg.GaussianLikelihood(line, data)
 
 # finding slope and intercept using algebra
 slope_num = N*np.sum(x*(y+noise)) - np.sum(x)*np.sum(y+noise)

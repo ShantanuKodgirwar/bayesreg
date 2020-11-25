@@ -2,7 +2,7 @@
 Collection of optimizers
 """
 import numpy as np
-from .cost import Cost, LeastSquares
+from .likelihood import Likelihood, GaussianLikelihood
 
 
 class Optimizer:
@@ -12,7 +12,7 @@ class Optimizer:
     """
 
     def __init__(self, cost):
-        assert isinstance(cost, Cost)
+        assert isinstance(cost, Likelihood)
         self.cost = cost
 
     def run(self, *args):
@@ -34,7 +34,7 @@ class GradientDescent(Optimizer):
 
     def __init__(self, cost, learn_rate, num_iter):
         assert cost.has_gradient
-        assert isinstance(cost, LeastSquares)
+        assert isinstance(cost, GaussianLikelihood)
 
         super().__init__(cost)
 
@@ -78,7 +78,7 @@ class BarzilaiBorwein(GradientDescent):
         """
 
         assert cost.has_gradient
-        assert isinstance(cost, LeastSquares)
+        assert isinstance(cost, GaussianLikelihood)
 
         super().__init__(cost, learn_rate, num_iter)
 

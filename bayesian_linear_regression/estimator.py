@@ -3,7 +3,7 @@ Collection of classes used for parameter estimation.
 """
 import numpy as np
 
-from .cost import Cost, GoodnessOfFit, LeastSquares, RidgeRegularizer, SumOfCosts
+from .likelihood import Likelihood, GaussianLikelihood, Regularizer, SumOfCosts
 
 
 class Estimator:
@@ -13,7 +13,7 @@ class Estimator:
     """
 
     def __init__(self, cost):
-        assert isinstance(cost, Cost)
+        assert isinstance(cost, Likelihood)
         self.cost = cost
 
     def run(self, *args):
@@ -29,7 +29,7 @@ class LSQEstimator(Estimator):
     """
 
     def __init__(self, cost):
-        assert isinstance(cost, LeastSquares)
+        assert isinstance(cost, GaussianLikelihood)
 
         super().__init__(cost)
 
@@ -71,7 +71,7 @@ class RidgeEstimator(Estimator):
         assert isinstance(sum_of_costs, SumOfCosts)
 
         for cost in sum_of_costs:
-            isinstance(cost, RidgeRegularizer) or isinstance(cost, LeastSquares)
+            isinstance(cost, Regularizer) or isinstance(cost, GaussianLikelihood)
 
         super().__init__(sum_of_costs)
 
@@ -82,7 +82,7 @@ class RidgeEstimator(Estimator):
 
         for cost in self.cost:
 
-            if isinstance(cost, RidgeRegularizer):
+            if isinstance(cost, Regularizer):
                 a += cost.hyperparameter * cost.A
 
             else:
@@ -106,17 +106,21 @@ class PrecisionEstimator(Estimator):
     """
 
     def __init__(self, cost):
-        assert isinstance(cost, LeastSquares)
+        assert isinstance(cost, GaussianLikelihood)
 
         super().__init__(cost)
 
-    def run(self):
+    def run(self, shape_beta=None, rate_beta=None):
         data = self.cost.data
         residuals = self.cost.residuals
         # coming from Gamma prior on alpha assuming identical shape and rate
         # if set to zero, we are back to Jeffreys' prior
-        eps = 1e-3
-        return (len(data.input) - 2 + 2*eps) / (np.linalg.norm(residuals)**2 + 2*eps)
+        if None not in (shape_beta, rate_beta):
+            return (len(data.input) - 2 + 2*shape_beta) / (np.linalg.norm(residuals)**2
+                                                           + 2*rate_beta)
+        else:
+            eps = 1e-3
+            return (len(data.input) - 2 + 2*eps) / (np.linalg.norm(residuals)**2 + 2*eps)
 
 
 class HyperparameterEstimator(Estimator):
@@ -128,13 +132,17 @@ class HyperparameterEstimator(Estimator):
     hyperparameter "alpha" is defined based on gaussian model.
     """
     def __init__(self, cost):
-        assert isinstance(cost, RidgeRegularizer)
+        assert isinstance(cost, Regularizer)
 
         super().__init__(cost)
 
-    def run(self):
+    def run(self, shape_alpha=None, rate_alpha=None):
         params = self.cost.model.params
         # coming from Gamma prior on alpha assuming identical shape and rate
         # if set to zero, we are back to Jeffreys' prior
-        eps = 1e-3
-        return (len(params) - 2 + 2 * eps) / (np.linalg.norm(params) ** 2 + 2 * eps)
+        if None not in (shape_alpha, rate_alpha):
+            return (len(params) - 2 + 2 * shape_alpha) / (np.linalg.norm(params) ** 2
+                                                          + 2 * rate_alpha)
+        else:
+            eps = 1e-3
+            return (len(params) - 2 + 2 * eps) / (np.linalg.norm(params) ** 2 + 2 * eps)

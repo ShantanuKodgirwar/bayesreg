@@ -12,8 +12,8 @@ def calc_map_jeffreys(input_vec, output_vec, n_degree, num_iter):
     """
     data = reg.Data(np.transpose([input_vec, output_vec]))  # define the data that is passed
     poly = reg.Polynomial(np.ones(n_degree))  # model is defined that is used
-    lsq = reg.LeastSquares(poly, data)  # least-squares as cost function
-    regularizer = reg.RidgeRegularizer(poly)  # Regularizer term; pass ridge_param = 0
+    lsq = reg.GaussianLikelihood(poly, data)  # least-squares as cost function
+    regularizer = reg.Regularizer(poly)  # Regularizer term; pass ridge_param = 0
     precision_estimator = reg.PrecisionEstimator(lsq)  # precision parameter based on Jeffreys prior
     hyperparameter_estimator = reg.HyperparameterEstimator(regularizer)  # hyperparameter based on Jeffreys prior
     total_cost = reg.SumOfCosts(poly, lsq, regularizer)  # lsq+regularizer to give the modified cost function

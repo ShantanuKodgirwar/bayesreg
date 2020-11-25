@@ -4,10 +4,9 @@ Estimating the results of maximum posterior under bayesian inference.
 import numpy as np
 from .estimator import Estimator, RidgeEstimator, PrecisionEstimator, \
     HyperparameterEstimator
-from .cost import LeastSquares, RidgeRegularizer
 
 
-class MaximumPosterior:
+class Posterior:
     """MaximumPosterior
 
     Estimates various parameters based on maximum a posteriori(MAP)
@@ -23,7 +22,7 @@ class MaximumPosterior:
         raise NotImplementedError(msg)
 
 
-class MAPJeffreysPrior(MaximumPosterior):
+class MAPJeffreysPrior(Posterior):
     """MAPJeffreysPrior
 
     Estimates MAP results for coefficients "w", precision parameter "beta" and
@@ -66,7 +65,7 @@ class MAPJeffreysPrior(MaximumPosterior):
 
             # TODO: Gamma Prior class to separate out 'eps', setting a value of mode
             #  and a better structure
-            eps = 1e-3 # needs to be the same as eps used in estimators
+            eps = 1e-3  # needs to be the same as eps used in estimators
             a_alpha, b_alpha = eps, eps
             a_beta, b_beta = eps, eps
             log_likelihood_prior = - self.estimator.cost(params)

@@ -27,7 +27,7 @@ def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
     """
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(poly, data)
+    lsq = reg.GaussianLikelihood(poly, data)
     optimize = reg.GradientDescent(lsq, learn_rate, num_iter)
     params, cost_iter = optimize.run(cost_expected)
     poly.params = params
@@ -55,7 +55,7 @@ def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
     """
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.zeros(n_degree))
-    lsq = reg.LeastSquares(poly, data)
+    lsq = reg.GaussianLikelihood(poly, data)
     optimize = reg.BarzilaiBorwein(lsq, learn_rate, num_iter)
     params, cost_iter_bb = optimize.run(cost_expected)
     poly.params = params
@@ -82,7 +82,7 @@ def calc_lsq_estimator(x, y, n_degree):
 
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(poly, data)
+    lsq = reg.GaussianLikelihood(poly, data)
     estimator = reg.LSQEstimator(lsq)
     poly.params = estimator.run()
 

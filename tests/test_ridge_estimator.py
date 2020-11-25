@@ -34,8 +34,8 @@ def calc_ridge_estimator(x, y, n_degree, ridge_param):
     """
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(poly, data)
-    ridge = reg.RidgeRegularizer(poly, ridge_param)
+    lsq = reg.GaussianLikelihood(poly, data)
+    ridge = reg.Regularizer(poly, ridge_param)
     total_cost = reg.SumOfCosts(poly, lsq, ridge)
     estimator = reg.RidgeEstimator(total_cost)
     poly.params = estimator.run()
@@ -66,8 +66,8 @@ def calc_rmse_ridge(x_train, y_train, x_test, y_test, n_degree, lambda_logspace)
     poly = reg.Polynomial(np.ones(n_degree))
 
     for ridge_param in lambda_logspace:
-        lsq = reg.LeastSquares(poly, data)
-        ridge = reg.RidgeRegularizer(poly, ridge_param)
+        lsq = reg.GaussianLikelihood(poly, data)
+        ridge = reg.Regularizer(poly, ridge_param)
         total_cost = reg.SumOfCosts(poly, lsq, ridge)
         estimator = reg.RidgeEstimator(total_cost)
         poly.params = estimator.run()

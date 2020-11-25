@@ -115,7 +115,7 @@ params_true = np.polyfit(x, y, n_params - 1)[::-1]
 model.params = params_true
 
 data = reg.Data(np.transpose([x, y]))
-lsq = reg.LeastSquares(model, data)
+lsq = reg.GaussianLikelihood(model, data)
 fitter = reg.LSQEstimator(lsq)
 fitter = PolyFitter2(lsq)
 fitter2 = PolyFitter(lsq)

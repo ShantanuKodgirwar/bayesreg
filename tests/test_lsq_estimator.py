@@ -34,7 +34,7 @@ def calc_lsq_estimator(x, y, n_degree):
     """
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(poly, data)
+    lsq = reg.GaussianLikelihood(poly, data)
     estimator = reg.LSQEstimator(lsq)
     poly.params = estimator.run()
 
@@ -65,7 +65,7 @@ def calc_rmse_lsq(x_train, y_train, x_test, y_test, n_degree):
 
     for n_degree in range(1, len(x_train)):
         poly = reg.Polynomial(np.ones(n_degree))
-        lsq = reg.LeastSquares(poly, data)
+        lsq = reg.GaussianLikelihood(poly, data)
         estimator = reg.LSQEstimator(lsq)
         poly.params = estimator.run()
         train_error.append(reg.rmse(y_train, poly(x_train)))
