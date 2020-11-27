@@ -93,7 +93,7 @@ class RidgeEstimator(Estimator):
         return np.linalg.inv(a) @ b
 
 
-class PrecisionEstimator(Estimator):
+class JeffreysPrecisionEstimator(Estimator):
     # TODO: Possibly create a single class instead of PrecisionEstimator and
     #  HyperparameterEstimator as they have a similar form
 
@@ -123,7 +123,7 @@ class PrecisionEstimator(Estimator):
             return (len(data.input) - 2 + 2*eps) / (np.linalg.norm(residuals)**2 + 2*eps)
 
 
-class HyperparameterEstimator(Estimator):
+class JeffreysHyperparameterEstimator(Estimator):
     """HyperparameterEstimator
 
     alpha = (M-2) / ||w||**2

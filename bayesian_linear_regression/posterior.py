@@ -2,8 +2,8 @@
 Estimating the results of maximum posterior under bayesian inference.
 """
 import numpy as np
-from .estimator import Estimator, RidgeEstimator, PrecisionEstimator, \
-    HyperparameterEstimator
+from .estimator import Estimator, RidgeEstimator, JeffreysPrecisionEstimator, \
+    JeffreysHyperparameterEstimator
 
 
 class Posterior:
@@ -22,11 +22,12 @@ class Posterior:
         raise NotImplementedError(msg)
 
 
-class MAPJeffreysPrior(Posterior):
-    """MAPJeffreysPrior
+class JeffreysGammasPosterior(Posterior):
+    """JeffreysGammasPosterior
 
     Estimates MAP results for coefficients "w", precision parameter "beta" and
-    hyperparameter "alpha" under the assumption of a jeffreys prior.
+    hyperparameter "alpha" for a regularized gaussian likelihood (Ridge regression)
+    with Jeffreys prior and Gammas hyperprior.
 
     Parameters
     ----------
@@ -38,10 +39,10 @@ class MAPJeffreysPrior(Posterior):
     def __init__(self, ridge_estimator, alpha_estimator, beta_estimator):
         assert isinstance(ridge_estimator, RidgeEstimator)
 
-        assert isinstance(alpha_estimator, HyperparameterEstimator)
+        assert isinstance(alpha_estimator, JeffreysHyperparameterEstimator)
         self.alpha_estimator = alpha_estimator
 
-        assert isinstance(beta_estimator, PrecisionEstimator)
+        assert isinstance(beta_estimator, JeffreysPrecisionEstimator)
         self.beta_estimator = beta_estimator
 
         super().__init__(ridge_estimator)

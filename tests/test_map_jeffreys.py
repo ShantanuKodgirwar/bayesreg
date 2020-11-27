@@ -10,20 +10,33 @@ def calc_map_jeffreys(input_vec, output_vec, n_degree, num_iter):
     """
     Implements the necessary classes to predict values of response vector
     """
+    # Instantiate data and model
     data = reg.Data(np.transpose([input_vec, output_vec]))  # define the data that is passed
     poly = reg.Polynomial(np.ones(n_degree))  # model is defined that is used
+
+    # Instantiate likelihood/cost based on Gaussian distribution
     lsq = reg.GaussianLikelihood(poly, data)  # least-squares as cost function
-    regularizer = reg.Regularizer(poly)  # Regularizer term; pass ridge_param = 0
-    precision_estimator = reg.PrecisionEstimator(lsq)  # precision parameter based on Jeffreys prior
-    hyperparameter_estimator = reg.HyperparameterEstimator(regularizer)  # hyperparameter based on Jeffreys prior
-    total_cost = reg.SumOfCosts(poly, lsq, regularizer)  # lsq+regularizer to give the modified cost function
+    regularizer = reg.Regularizer(poly)  # regularizer
+    total_cost = reg.SumOfCosts(poly, lsq, regularizer)  # lsq+regularizer gives ridge regularizer
+
+    # Instantiate priors
+    eps = 1e-3
+    gamma_hyperprior = reg.GammaPrior(shape=eps, rate=eps)
+
+    # Instantiate estimators
+    beta_estimator = reg.JeffreysPrecisionEstimator(lsq)  # precision parameter (variance inverse gaussian likelihood)
+    alpha_estimator = reg.JeffreysHyperparameterEstimator(regularizer)  # hyperparameter (variance inverse regularizer)
     ridge_estimator = reg.RidgeEstimator(total_cost)  # estimate the modified error function
-    max_posterior = reg.MAPJeffreysPrior(ridge_estimator, hyperparameter_estimator, precision_estimator)
+
+    # Maximum posterior with Jeffreys prior
+    max_posterior = reg.JeffreysGammasPosterior(ridge_estimator, alpha_estimator, beta_estimator)
     log_posterior, states = max_posterior.run(num_iter)
+
+    # evaluated parameter values
     params, beta, alpha = list(map(np.array, zip(*states)))
     poly.params = params[-1, :]
     # TODO: Making this more scalable to not use so many commands (A task under design pattern; check
-    #  Scikit-Learn for comparison)
+    #  Scikit-Learn (pipeline class) for comparison)
 
     return poly(input_vec), log_posterior, alpha, beta, params
 
@@ -61,7 +74,8 @@ if __name__ == '__main__':
     num_iter_axis = np.linspace(1, num_iter, num_iter)
 
     # call the function
-    fit_train, log_posterior_train, alpha, beta, params = calc_map_jeffreys(x_train, y_train, n_degree, num_iter)
+    fit_train, log_posterior_train, alpha, beta, params = calc_map_jeffreys(x_train, y_train,
+                                                                            n_degree, num_iter)
     print(f'alpha={alpha[-1]}, beta={beta[-1]}')
     print(f'Best fit ridge parameter (log scale) is {np.log(alpha[-1]/beta[-1])}')
 
