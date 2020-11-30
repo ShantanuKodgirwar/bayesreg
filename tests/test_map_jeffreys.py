@@ -19,18 +19,19 @@ def calc_map_jeffreys(input_vec, output_vec, n_degree, num_iter):
     regularizer = reg.Regularizer(poly)  # regularizer
     total_cost = reg.SumOfCosts(poly, lsq, regularizer)  # lsq+regularizer gives ridge regularizer
 
-    # Instantiate priors
-    eps = 1e-3
-    gamma_hyperprior = reg.GammaPrior(shape=eps, rate=eps)
-
     # Instantiate estimators
     beta_estimator = reg.JeffreysPrecisionEstimator(lsq)  # precision parameter (variance inverse gaussian likelihood)
     alpha_estimator = reg.JeffreysHyperparameterEstimator(regularizer)  # hyperparameter (variance inverse regularizer)
     ridge_estimator = reg.RidgeEstimator(total_cost)  # estimate the modified error function
 
+    # Instantiate priors
+    eps = 1e-3
+    gamma_prior_alpha = reg.GammaPrior(alpha_estimator, shape=eps, rate=eps)
+    gamma_prior_beta = reg.GammaPrior(beta_estimator, shape=eps, rate=eps)
+
     # Maximum posterior with Jeffreys prior
     max_posterior = reg.JeffreysGammasPosterior(ridge_estimator, alpha_estimator, beta_estimator)
-    log_posterior, states = max_posterior.run(num_iter)
+    log_posterior, states = max_posterior.run(num_iter, gamma_prior_alpha, gamma_prior_beta)
 
     # evaluated parameter values
     params, beta, alpha = list(map(np.array, zip(*states)))

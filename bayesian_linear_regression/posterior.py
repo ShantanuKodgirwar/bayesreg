@@ -4,6 +4,7 @@ Estimating the results of maximum posterior under bayesian inference.
 import numpy as np
 from .estimator import Estimator, RidgeEstimator, JeffreysPrecisionEstimator, \
     JeffreysHyperparameterEstimator
+from .prior import Prior, HyperPrior, GammaPrior, JeffreysPrior
 
 
 class Posterior:
@@ -48,7 +49,7 @@ class JeffreysGammasPosterior(Posterior):
         super().__init__(ridge_estimator)
         # TODO: A cleaner way for a constructor?!
         
-    def run(self, num_iter):
+    def run(self, num_iter, gamma_prior_alpha=None, gamma_prior_beta=None):
 
         log_posterior_list = []
         states = []
@@ -70,8 +71,15 @@ class JeffreysGammasPosterior(Posterior):
             a_alpha, b_alpha = eps, eps
             a_beta, b_beta = eps, eps
             log_likelihood_prior = - self.estimator.cost(params)
-            log_hyperpriors = (a_alpha - 1) * np.log(alpha) - b_alpha * alpha
-            log_hyperpriors += (a_beta - 1) * np.log(beta) - b_beta * beta
+            if gamma_prior_alpha is not None:
+                assert isinstance(gamma_prior_alpha, GammaPrior)
+                log_hyperpriors = gamma_prior_alpha(alpha)
+            if gamma_prior_beta is not None:
+                assert isinstance(gamma_prior_beta, GammaPrior)
+                log_hyperpriors += gamma_prior_beta(beta)
+
+            #log_hyperpriors = (a_alpha - 1) * np.log(alpha) - b_alpha * alpha
+            #log_hyperpriors += (a_beta - 1) * np.log(beta) - b_beta * beta
             log_posterior = log_likelihood_prior + 0 * log_hyperpriors
             log_posterior_list.append(log_posterior)
 

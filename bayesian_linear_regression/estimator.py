@@ -101,7 +101,7 @@ class JeffreysPrecisionEstimator(Estimator):
 
     beta  = (N-2) / || t - Xw ||**2
 
-    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
+    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys 
     precision parameter "beta" (inverse of variance) is defined based on gaussian model.
     """
 

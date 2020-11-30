@@ -10,7 +10,7 @@ from .estimator import JeffreysPrecisionEstimator, JeffreysHyperparameterEstimat
 class Prior:
     """Prior
 
-    An abstract superclass that adds a prior probability distribution
+    An abstract class that adds a prior probability distribution
 
     Parameters
     ----------
@@ -18,18 +18,49 @@ class Prior:
     """
 
     # TODO: A good way to design an abstract class where no arguments are previously known?!
-    def __init__(self, *args):
-        self.args = args
+    def __init__(self, model):
+        assert isinstance(model, LinearModel)
+        self.model = model
 
-    def __call__(self, *args):
-        return self._eval(self, *args)
+    def __call__(self, params=None):
+        if params is not None:
+            self.model.params = params
+
+        return self._eval(self, params)
+
+    def _eval(self, params):
+        msg = 'Needs to be implemented in subclass'
+        assert NotImplementedError, msg
+
+
+class HyperPrior:
+    """HyperPrior
+
+    An abstract class that evaluates prior of the prior distribution (hyperprior) for
+    precision parameters/hyperparameters.
+    """
+
+    def __init__(self, precision):
+        assert isinstance(precision, float)
+        self._precision = precision
+
+    @property
+    def precision(self):
+        return self._precision
+
+    @precision.setter
+    def precision(self, val):
+        self._precision = float(val)
+
+    def __call__(self, precision):
+        return self._eval(self, precision)
 
     def _eval(self, *args):
         msg = 'Needs to be implemented in subclass'
         assert NotImplementedError, msg
 
 
-class GammaPrior(Prior):
+class GammaPrior(HyperPrior):
     """GammaPrior
 
     prior = rate*precision - (shape - 1)*log(precision)
@@ -39,6 +70,7 @@ class GammaPrior(Prior):
 
     Parameters
     ----------
+    precision: precision parameter/hyperparameter
     shape: shape parameter is defined for a gamma distribution
     rate: rate parameter is defined for a gamma distribution
     """
@@ -46,7 +78,9 @@ class GammaPrior(Prior):
     # TODO: Is it a good idea to pass a similar argument in constructor and in
     #  the call method (in this case 'precision'), similarly a setter/getter
     #  method could be used maybe?
-    def __init__(self, shape, rate):
+    def __init__(self, precision, shape, rate):
+        super().__init__(precision)
+
         assert isinstance(shape, float)
         self._shape = shape
 
@@ -76,7 +110,7 @@ class GammaPrior(Prior):
         return rate * precision - (shape - 1) * np.log(precision)
 
 
-class JeffreysPrior(Prior):
+class JeffreysPrior(HyperPrior):
     """JeffreysPrior
 
     prior = log(precision)
@@ -105,4 +139,3 @@ class JeffreysPrior(Prior):
         precision = self._precision
 
         return np.log(precision)
-
