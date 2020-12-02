@@ -19,25 +19,24 @@ def calc_map_jeffreys(input_vec, output_vec, n_degree, num_iter):
     regularizer = reg.Regularizer(poly)  # regularizer
     total_cost = reg.SumOfCosts(poly, lsq, regularizer)  # lsq+regularizer gives ridge regularizer
 
-    # Instantiate estimators
-    beta_estimator = reg.JeffreysPrecisionEstimator(lsq)  # precision parameter (variance inverse gaussian likelihood)
-    alpha_estimator = reg.JeffreysHyperparameterEstimator(regularizer)  # hyperparameter (variance inverse regularizer)
-    ridge_estimator = reg.RidgeEstimator(total_cost)  # estimate the modified error function
-
     # Instantiate priors
-    eps = 1e-3
-    gamma_prior_alpha = reg.GammaPrior(alpha_estimator, shape=eps, rate=eps)
-    gamma_prior_beta = reg.GammaPrior(beta_estimator, shape=eps, rate=eps)
+    eps = float(1e-3)
+    gamma_prior_alpha = reg.GammaPrior(shape=eps, rate=eps)
+    gamma_prior_beta = reg.GammaPrior(shape=eps, rate=eps)
+
+    # Instantiate estimators
+    alpha_estimator = reg.PrecisionEstimator(regularizer, gamma_prior_alpha)  # hyperparameter estimator
+    beta_estimator = reg.PrecisionEstimator(lsq, gamma_prior_beta)  # precision parameter estimator
+    ridge_estimator = reg.RidgeEstimator(total_cost)  # estimate the ridge error function
 
     # Maximum posterior with Jeffreys prior
-    max_posterior = reg.JeffreysGammasPosterior(ridge_estimator, alpha_estimator, beta_estimator)
-    log_posterior, states = max_posterior.run(num_iter, gamma_prior_alpha, gamma_prior_beta)
+    max_posterior = reg.JeffreysPosterior(ridge_estimator, alpha_estimator, beta_estimator)
+    states = max_posterior.run(num_iter, gamma_prior_alpha, gamma_prior_beta)
 
     # evaluated parameter values
-    params, beta, alpha = list(map(np.array, zip(*states)))
+    params, beta, alpha, log_posterior = list(map(np.array, zip(*states)))
     poly.params = params[-1, :]
-    # TODO: Making this more scalable to not use so many commands (A task under design pattern; check
-    #  Scikit-Learn (pipeline class) for comparison)
+    # TODO: Making this more scalable to not use so many commands (A task under design pattern)
 
     return poly(input_vec), log_posterior, alpha, beta, params
 
@@ -50,23 +49,15 @@ if __name__ == '__main__':
 
     x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
 
-    # predefined Gaussian noise for training data with sigma = 0.2
-    noise_train = np.asarray([0.02333039, 0.05829248, -0.13038691, -0.29317861,
-                              -0.01635218, -0.08768144, 0.24820263, -0.08946657,
-                              0.36653148, 0.13669558])
-    # Gaussian noise
-    noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma)
+    # Gaussian training noise with a fixed seed value.
+    noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma, seed=10)
 
     y_train = true_model(x_train) + noise_train  # training response vector with noise
     dx = np.diff(x_train)[0]
     x_test = 0.5 * dx + x_train[:-1]  # test data input vector x
 
-    # predefined Gaussian noise for testing data with sigma = 0.2
-    noise_test = np.asarray([-0.08638868, 0.02850903, -0.67500835, 0.01389309,
-                             -0.2408333, 0.05583381, -0.1050192, -0.10009032,
-                             0.08420656])
-    # Gaussian noise
-    noise_test = reg.NoiseModel(len(x_test)).gaussian_noise(sigma)
+    # Gaussian testing noise with a fixed seed value
+    noise_test = reg.NoiseModel(len(x_test)).gaussian_noise(sigma, seed=42)
 
     y_test = true_model(x_test) + noise_test  # test response vector with noise
 

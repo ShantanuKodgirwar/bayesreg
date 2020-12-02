@@ -4,6 +4,7 @@ Collection of classes used for parameter estimation.
 import numpy as np
 
 from .likelihood import Likelihood, GaussianLikelihood, Regularizer, SumOfCosts
+from .prior import GammaPrior
 
 
 class Estimator:
@@ -93,56 +94,46 @@ class RidgeEstimator(Estimator):
         return np.linalg.inv(a) @ b
 
 
-class JeffreysPrecisionEstimator(Estimator):
-    # TODO: Possibly create a single class instead of PrecisionEstimator and
-    #  HyperparameterEstimator as they have a similar form
-
+class PrecisionEstimator(Estimator):
     """PrecisionEstimator
 
-    beta  = (N-2) / || t - Xw ||**2
+    beta  = (N-2) + 2*shape / || t - Xw ||**2 + 2*rate
+    alpha = (M-2) + 2*shape / ||w||**2 + 2*rate
 
-    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys 
-    precision parameter "beta" (inverse of variance) is defined based on gaussian model.
+    Estimates precision parameter/hyperparameter based on gaussian likelihood distribution
+    with Jeffreys prior and gamma hyperprior distribution (optional) given by shape and rate.
+    'beta', a precision parameter for the gaussian distribution of the output data t;
+    'alpha' a precision parameter/hyperparameter for the gaussian distribution of
+    coefficients w
     """
 
-    def __init__(self, cost):
-        assert isinstance(cost, GaussianLikelihood)
+    def __init__(self, cost, hyperprior=None):
 
+        if hyperprior is not None:
+            assert isinstance(hyperprior, GammaPrior)
+        self.hyperprior = hyperprior
+
+        assert isinstance(cost, GaussianLikelihood) or isinstance(cost, Regularizer)
         super().__init__(cost)
 
-    def run(self, shape_beta=None, rate_beta=None):
-        data = self.cost.data
-        residuals = self.cost.residuals
-        # coming from Gamma prior on alpha assuming identical shape and rate
-        # if set to zero, we are back to Jeffreys' prior
-        if None not in (shape_beta, rate_beta):
-            return (len(data.input) - 2 + 2*shape_beta) / (np.linalg.norm(residuals)**2
-                                                           + 2*rate_beta)
+    def run(self):
+        cost = self.cost
+
+        if isinstance(cost, GaussianLikelihood):
+            data = self.cost.data
+            residuals = self.cost.residuals
+
+            if self.hyperprior is not None:
+                return (len(data.input) - 2 + 2 * self.hyperprior.shape) / (np.linalg.norm(residuals) ** 2
+                                                                            + 2 * self.hyperprior.rate)
+            else:
+                return (len(data.input) - 2) / (np.linalg.norm(residuals) ** 2)
+
         else:
-            eps = 1e-3
-            return (len(data.input) - 2 + 2*eps) / (np.linalg.norm(residuals)**2 + 2*eps)
+            params = self.cost.model.params
 
-
-class JeffreysHyperparameterEstimator(Estimator):
-    """HyperparameterEstimator
-
-    alpha = (M-2) / ||w||**2
-
-    By Maximum a posteriori (MAP) estimation under the assumption of a jeffreys prior,
-    hyperparameter "alpha" is defined based on gaussian model.
-    """
-    def __init__(self, cost):
-        assert isinstance(cost, Regularizer)
-
-        super().__init__(cost)
-
-    def run(self, shape_alpha=None, rate_alpha=None):
-        params = self.cost.model.params
-        # coming from Gamma prior on alpha assuming identical shape and rate
-        # if set to zero, we are back to Jeffreys' prior
-        if None not in (shape_alpha, rate_alpha):
-            return (len(params) - 2 + 2 * shape_alpha) / (np.linalg.norm(params) ** 2
-                                                          + 2 * rate_alpha)
-        else:
-            eps = 1e-3
-            return (len(params) - 2 + 2 * eps) / (np.linalg.norm(params) ** 2 + 2 * eps)
+            if self.hyperprior is not None:
+                return (len(params) - 2 + 2 * self.hyperprior.shape) / (np.linalg.norm(params) ** 2
+                                                                        + 2 * self.hyperprior.rate)
+            else:
+                return (len(params) - 2) / (np.linalg.norm(params) ** 2)

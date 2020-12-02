@@ -4,7 +4,11 @@ function i.e., minimizing the total cost
 """
 import numpy as np
 from .model import LinearModel
-from .estimator import JeffreysPrecisionEstimator, JeffreysHyperparameterEstimator
+
+
+def _eval(params):
+    msg = 'Needs to be implemented in subclass'
+    assert NotImplementedError, msg
 
 
 class Prior:
@@ -17,7 +21,6 @@ class Prior:
     model: model called from the model class
     """
 
-    # TODO: A good way to design an abstract class where no arguments are previously known?!
     def __init__(self, model):
         assert isinstance(model, LinearModel)
         self.model = model
@@ -26,11 +29,7 @@ class Prior:
         if params is not None:
             self.model.params = params
 
-        return self._eval(self, params)
-
-    def _eval(self, params):
-        msg = 'Needs to be implemented in subclass'
-        assert NotImplementedError, msg
+        return _eval(params)
 
 
 class HyperPrior:
@@ -40,24 +39,36 @@ class HyperPrior:
     precision parameters/hyperparameters.
     """
 
-    def __init__(self, precision):
-        assert isinstance(precision, float)
-        self._precision = precision
+    # TODO: Is this a good way to create an abstract class where the arguments are not
+    #  given in constructor?
+    def __init__(self, *args):
+        self.args = args
 
-    @property
-    def precision(self):
-        return self._precision
+    def __call__(self, precision_param):
+        return self._eval(precision_param)
 
-    @precision.setter
-    def precision(self, val):
-        self._precision = float(val)
-
-    def __call__(self, precision):
-        return self._eval(self, precision)
-
-    def _eval(self, *args):
+    def _eval(self, precision_param):
         msg = 'Needs to be implemented in subclass'
         assert NotImplementedError, msg
+
+
+class JeffreysPrior(HyperPrior):
+    """JeffreysPrior
+
+    prior = log(precision)
+
+    Maximizing Jeffreys prior distribution (inverse of precision of the likelihood
+    distribution). The class computes negative log prior for Jeffreys prior.
+
+    Parameters
+    ----------
+    precision_param: precision value of the likelihood distribution or regularizer (alpha/beta)
+    """
+
+    def _eval(self, precision_param):
+        precision_param = self.precision_param
+
+        return np.log(precision_param)
 
 
 class GammaPrior(HyperPrior):
@@ -70,17 +81,11 @@ class GammaPrior(HyperPrior):
 
     Parameters
     ----------
-    precision: precision parameter/hyperparameter
     shape: shape parameter is defined for a gamma distribution
     rate: rate parameter is defined for a gamma distribution
     """
 
-    # TODO: Is it a good idea to pass a similar argument in constructor and in
-    #  the call method (in this case 'precision'), similarly a setter/getter
-    #  method could be used maybe?
-    def __init__(self, precision, shape, rate):
-        super().__init__(precision)
-
+    def __init__(self, shape, rate):
         assert isinstance(shape, float)
         self._shape = shape
 
@@ -103,39 +108,9 @@ class GammaPrior(HyperPrior):
     def rate(self, val):
         self._rate = float(val)
 
-    def _eval(self, precision):
+    def _eval(self, precision_param):
         rate = self.rate
         shape = self.shape
 
-        return rate * precision - (shape - 1) * np.log(precision)
+        return rate * precision_param - (shape - 1) * np.log(precision_param)
 
-
-class JeffreysPrior(HyperPrior):
-    """JeffreysPrior
-
-    prior = log(precision)
-
-    Maximizing Jeffreys prior distribution (inverse of precision of the likelihood
-    distribution). The class computes negative log prior for Jeffreys prior.
-
-    Parameters
-    ----------
-    precision: precision of the likelihood distribution or regularizer
-    """
-
-    def __init__(self, precision):
-        assert isinstance(precision, float)
-        self._precision = precision
-
-    @property
-    def precision(self):
-        return self._precision
-
-    @precision.setter
-    def precision(self, val):
-        self._precision = float(val)
-
-    def _eval(self):
-        precision = self._precision
-
-        return np.log(precision)

@@ -1,10 +1,8 @@
 """
 Estimating the results of maximum posterior under bayesian inference.
 """
-import numpy as np
-from .estimator import Estimator, RidgeEstimator, JeffreysPrecisionEstimator, \
-    JeffreysHyperparameterEstimator
-from .prior import Prior, HyperPrior, GammaPrior, JeffreysPrior
+from .estimator import Estimator, RidgeEstimator, PrecisionEstimator
+from .prior import GammaPrior
 
 
 class Posterior:
@@ -23,8 +21,8 @@ class Posterior:
         raise NotImplementedError(msg)
 
 
-class JeffreysGammasPosterior(Posterior):
-    """JeffreysGammasPosterior
+class JeffreysPosterior(Posterior):
+    """JeffreysPosterior
 
     Estimates MAP results for coefficients "w", precision parameter "beta" and
     hyperparameter "alpha" for a regularized gaussian likelihood (Ridge regression)
@@ -39,51 +37,53 @@ class JeffreysGammasPosterior(Posterior):
 
     def __init__(self, ridge_estimator, alpha_estimator, beta_estimator):
         assert isinstance(ridge_estimator, RidgeEstimator)
+        super().__init__(ridge_estimator)
 
-        assert isinstance(alpha_estimator, JeffreysHyperparameterEstimator)
+        assert isinstance(alpha_estimator, PrecisionEstimator)
         self.alpha_estimator = alpha_estimator
 
-        assert isinstance(beta_estimator, JeffreysPrecisionEstimator)
+        assert isinstance(beta_estimator, PrecisionEstimator)
         self.beta_estimator = beta_estimator
 
-        super().__init__(ridge_estimator)
-        # TODO: A cleaner way for a constructor?!
-        
     def run(self, num_iter, gamma_prior_alpha=None, gamma_prior_beta=None):
+        """
 
-        log_posterior_list = []
+        Parameters
+        ----------
+        num_iter: Iterations to converge the posterior solution
+        gamma_prior_alpha: negative log of gamma priors for hyperparameter
+        gamma_prior_beta: negative log of gamma priors for precision parameter
+
+        Returns
+        -------
+        states: output parameters such log posterior, alpha, beta, params
+        """
+
         states = []
-
         for i in range(num_iter):
             params = self.estimator.run()
-            # TODO: Enabling self.alpha_estimator externally?!
             alpha = self.alpha_estimator.run()
             beta = self.beta_estimator.run()
+
             self.estimator.cost.model.params = params
             self.alpha_estimator.cost.hyperparameter = alpha
             self.beta_estimator.cost.precision = beta
 
-            states.append((params.copy(), beta, alpha))
-
-            # TODO: Gamma Prior class to separate out 'eps', setting a value of mode
-            #  and a better structure
-            eps = 1e-3  # needs to be the same as eps used in estimators
-            a_alpha, b_alpha = eps, eps
-            a_beta, b_beta = eps, eps
             log_likelihood_prior = - self.estimator.cost(params)
+
             if gamma_prior_alpha is not None:
                 assert isinstance(gamma_prior_alpha, GammaPrior)
-                log_hyperpriors = gamma_prior_alpha(alpha)
+
+            log_hyperpriors = - gamma_prior_alpha(alpha)
+
             if gamma_prior_beta is not None:
                 assert isinstance(gamma_prior_beta, GammaPrior)
-                log_hyperpriors += gamma_prior_beta(beta)
 
-            #log_hyperpriors = (a_alpha - 1) * np.log(alpha) - b_alpha * alpha
-            #log_hyperpriors += (a_beta - 1) * np.log(beta) - b_beta * beta
-            log_posterior = log_likelihood_prior + 0 * log_hyperpriors
-            log_posterior_list.append(log_posterior)
+            log_hyperpriors += - gamma_prior_beta(beta)
+            log_posterior = log_likelihood_prior + log_hyperpriors
+            states.append((params.copy(), beta, alpha, log_posterior))
 
-        return log_posterior_list, states
+        return states
 
 
 
