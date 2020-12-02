@@ -6,11 +6,6 @@ import numpy as np
 from .model import LinearModel
 
 
-def _eval(params):
-    msg = 'Needs to be implemented in subclass'
-    assert NotImplementedError, msg
-
-
 class Prior:
     """Prior
 
@@ -29,7 +24,11 @@ class Prior:
         if params is not None:
             self.model.params = params
 
-        return _eval(params)
+        return self._eval(params)
+
+    def _eval(self, params):
+        msg = 'Needs to be implemented in subclass'
+        assert NotImplementedError, msg
 
 
 class HyperPrior:
