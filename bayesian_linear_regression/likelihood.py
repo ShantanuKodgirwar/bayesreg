@@ -122,9 +122,9 @@ class GaussianLikelihood(LogLikelihood):
 
     cost = 0.5 * beta * ||t - Xw||^2 - 0.5 * N * log(beta)
 
-    A negative log likelihood is computed for a Gaussian distribution that results
-    into least squares error function; N is the length of input data and beta is the
-    precision of the distribution.
+    A negative log likelihood is computed for a Normal distribution that results
+    into least squares error function or L2 norm condition ; N is the length of input data
+    and beta (inverse of variance) is the precision of the distribution.
 
     Parameters
     ----------
@@ -143,6 +143,23 @@ class GaussianLikelihood(LogLikelihood):
 
         X = self.model.compute_design_matrix(self.data.input)
         return -self._precision * X.T.dot(self.residuals)
+
+
+class LaplaceLikelihood(LogLikelihood):
+    """LaplaceLikelihood
+
+    cost = beta * ||t - Xw|| - 0.5 * N * log(beta)
+
+    A negative log likelihood is computed for a Laplace distribution that results into least absolute
+    deviations (LAD) or L1 condition ; N is the length of input data and beta (inverse of scale
+    parameter) is a precision of the distribution.
+
+    """
+
+    def _eval(self, residuals):
+        precision = self._precision
+
+        return precision * residuals - 0.5 * len(self.data.input) * np.log(precision)
 
 
 class Regularizer(Likelihood):
@@ -196,12 +213,9 @@ class Regularizer(Likelihood):
 class SumOfCosts(Likelihood):
     """SumOfCosts
 
-    total_cost = 0.5 * (beta * ||t - Xw||^2 - N * log(beta) +
-                        alpha * ||w||^2 - M * log(alpha))
-
     Summation of costs from regression analysis
     (Ex: Gaussian log-likelihood (Least squares error) and Regularizer results to Ridge
-    /Tikhonov regularization that is used for compensating overfitting)
+    /Tikhonov/L2 regularization that is used for compensating overfitting)
     """
 
     def __init__(self, model, *costs):

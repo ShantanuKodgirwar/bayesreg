@@ -42,12 +42,13 @@ class GradientDescent(Optimizer):
         self.num_iter = num_iter
 
     def run(self, cost_expected=None):
-
         params = self.cost.model.params
-        if cost_expected is not None:
+        num_iter = self.num_iter
 
-            cost_iter = []
-            for i in range(self.num_iter):
+        cost_iter = []
+
+        if cost_expected is not None:
+            for i in range(num_iter):
                 params = params - self.learn_rate * self.cost.gradient(params)
                 cost = self.cost(params)
                 cost_iter.append(cost)
@@ -55,10 +56,12 @@ class GradientDescent(Optimizer):
                     print('Iterations for gradient descent are: ', i+1)
                     return params, cost_iter
 
-        for i in range(self.num_iter):
+        for i in range(num_iter):
             params = params - self.learn_rate * self.cost.gradient(params)
+            cost = self.cost(params)
+            cost_iter.append(cost)
 
-        return params
+        return params, cost_iter
 
 
 class BarzilaiBorwein(GradientDescent):

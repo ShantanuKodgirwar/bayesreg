@@ -124,8 +124,8 @@ class PrecisionEstimator(Estimator):
             residuals = self.cost.residuals
 
             if self.hyperprior is not None:
-                return (len(data.input) - 2 + 2 * self.hyperprior.shape) / (np.linalg.norm(residuals) ** 2
-                                                                            + 2 * self.hyperprior.rate)
+                return (len(data.input) - 2 + 2 * self.hyperprior.shape)\
+                       / (np.linalg.norm(residuals) ** 2 + 2 * self.hyperprior.rate)
             else:
                 return (len(data.input) - 2) / (np.linalg.norm(residuals) ** 2)
 
@@ -133,7 +133,7 @@ class PrecisionEstimator(Estimator):
             params = self.cost.model.params
 
             if self.hyperprior is not None:
-                return (len(params) - 2 + 2 * self.hyperprior.shape) / (np.linalg.norm(params) ** 2
-                                                                        + 2 * self.hyperprior.rate)
+                return (len(params) - 2 + 2 * self.hyperprior.shape)\
+                       / (np.linalg.norm(params) ** 2 + 2 * self.hyperprior.rate)
             else:
                 return (len(params) - 2) / (np.linalg.norm(params) ** 2)

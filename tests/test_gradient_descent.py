@@ -29,10 +29,18 @@ def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
     poly = reg.Polynomial(np.ones(n_degree))
     lsq = reg.GaussianLikelihood(poly, data)
     optimize = reg.GradientDescent(lsq, learn_rate, num_iter)
-    params, cost_iter = optimize.run(cost_expected)
-    poly.params = params
 
-    return poly(x), cost_iter
+    if cost_expected is not None:
+        params, cost_iter = optimize.run(cost_expected)
+        poly.params = params
+
+        return poly(x), cost_iter
+
+    else:
+        params, cost_iter = optimize.run()
+        poly.params = params
+
+        return poly(x), cost_iter
 
 
 def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
@@ -92,9 +100,15 @@ def calc_lsq_estimator(x, y, n_degree):
 def main():
 
     t = time.process_time()
-    y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected)
-    t = time.process_time() - t
-    print('Gradient descent time:', t)
+    if cost_expected is not None:
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected)
+        t = time.process_time() - t
+        print('Gradient descent time:', t)
+
+    else:
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected=None)
+        t = time.process_time() - t
+        print('Gradient descent time:', t)
 
     # run LSQ estimator
     t2 = time.process_time()
@@ -125,6 +139,8 @@ if __name__ == '__main__':
     sigma = 0.2  # Gaussian noise parameter
 
     cost_expected = n_samples * sigma ** 2 / 2.  # expected chi-squared n_samples
+
+    # cost_expected = None
 
     x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
 
@@ -159,7 +175,8 @@ if __name__ == '__main__':
     ax = axes[0, 0]
     ax.set_title('Cost for Gradient Descent')
     ax.plot(x_num_iter, cost_iter[start::])
-    ax.axhline(cost_expected, ls='--', color='r')
+    if cost_expected is not None:
+        ax.axhline(cost_expected, ls='--', color='r')
     ax.set_xlabel('num_iter', fontweight='bold')
     ax.set_ylabel('cost', fontweight='bold')
     ax.grid(linestyle='--')
@@ -183,7 +200,8 @@ if __name__ == '__main__':
     ax = axes[1, 0]
     ax.set_title('Cost for Barzilai-Borwein')
     ax.plot(x_num_iter, cost_iter_bb[start::])
-    ax.axhline(cost_expected, ls='--', color='r')
+    if cost_expected is not None:
+        ax.axhline(cost_expected, ls='--', color='r')
     ax.set_xlabel('num_iter', fontweight='bold')
     ax.set_ylabel('cost', fontweight='bold')
     ax.grid(linestyle='--')
