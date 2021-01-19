@@ -2,8 +2,8 @@
 Collection of optimizers
 """
 import numpy as np
-from .likelihood import Likelihood, GaussianLikelihood
-
+from .likelihood import Likelihood, GaussianLikelihood, LaplaceLikelihood
+from scipy.optimize import minimize
 
 class Optimizer:
     """Optimizer
@@ -18,6 +18,38 @@ class Optimizer:
     def run(self, *args):
         msg = 'Needs to be implemented by subclass'
         raise NotImplementedError(msg)
+
+
+class ScipyOptimizer(Optimizer):
+    """ScipyOptimizer
+
+    Importing SciPy optimizers
+    """
+
+    def __init__(self, cost):
+        super().__init__(cost)
+
+    def run(self, *args):
+        msg = 'Needs to be implemented by subclass'
+        raise NotImplementedError(msg)
+
+
+class BFGS(ScipyOptimizer):
+    """BFGS
+
+    Broyden-Fletcher-Goldfarb-Shanno algorithm (method='BFGS') is used for solving
+    unconstrained, nonlinear optimization problems by evaluating the gradient.
+    """
+
+    def __init__(self, cost):
+        assert isinstance(cost, LaplaceLikelihood)
+        super().__init__(cost)
+
+    def run(self):
+        cost = self.cost
+        params = cost.model.params
+
+        return minimize(cost, params, method='BFGS', options={'gtol': 1e-6, 'disp': True})
 
 
 class GradientDescent(Optimizer):
