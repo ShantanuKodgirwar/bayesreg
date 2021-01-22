@@ -150,9 +150,10 @@ class LaplaceLikelihood(LogLikelihood):
 
     cost = beta * ||t - Xw|| - 0.5 * N * log(beta)
 
-    A negative log likelihood is computed for a Laplace distribution that results into least absolute
-    deviations (LAD) or L1 condition ; N is the length of input data and beta (inverse of scale
-    parameter) is a precision of the distribution.
+    A negative log likelihood is computed for a Laplace distribution that results into least
+    absolute deviations (LAD) or L1 condition ; N is the length of input data and beta (inverse
+    of scale parameter) is a precision of the distribution. LAD does not have an analytical
+    solution, therefore uses optimizers such as 'BFGS'
 
     """
 

@@ -7,18 +7,19 @@ import matplotlib.pyplot as plt
 import time
 
 
-def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
+def calc_grad_desc(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
     """calc_grad_desc
 
     Solves the least-squares by gradient descent algorithm
 
     Parameters
     ----------
-    cost_expected: A suitable minimum value of a cost function
-    x : input training/testing set
-    y : output training/testing set
+    x: input training/testing set
+    y: output training/testing set
+    n_degree: degree of the fitting polynomial
     learn_rate : Learning rate
     num_iter : No. of iterations
+    cost_expected: A suitable minimum value of a cost function
 
     Returns
     -------
@@ -43,7 +44,7 @@ def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
         return poly(x), cost_iter
 
 
-def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
+def calc_barzilai_borwein(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
     """calc_barzilai_borwein
 
     Solves the least-squares by gradient descent algorithm
@@ -53,6 +54,7 @@ def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
     cost_expected: A suitable minimum value of a cost function
     x : input training/testing set
     y : output training/testing set
+    n_degree: degree of the fitting polynomial
     learn_rate : Learning rate
     num_iter : No. of iterations
 
@@ -101,12 +103,14 @@ def main():
 
     t = time.process_time()
     if cost_expected is not None:
-        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected)
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
+                                                cost_expected)
         t = time.process_time() - t
         print('Gradient descent time:', t)
 
     else:
-        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected=None)
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
+                                                cost_expected=None)
         t = time.process_time() - t
         print('Gradient descent time:', t)
 
@@ -117,8 +121,8 @@ def main():
     print('LSQ estimator time:', t2)
 
     t3 = time.process_time()
-    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb,
-                                                    cost_expected=None)
+    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, n_degree, init_learn_rate,
+                                                    num_iter_bb, cost_expected=None)
     t3 = time.process_time() - t3
     print('Barzilai-Borwein time :', t3)
 

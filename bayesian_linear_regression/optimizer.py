@@ -3,7 +3,8 @@ Collection of optimizers
 """
 import numpy as np
 from .likelihood import Likelihood, GaussianLikelihood, LaplaceLikelihood
-from scipy.optimize import minimize
+import scipy.optimize as opt
+
 
 class Optimizer:
     """Optimizer
@@ -49,7 +50,7 @@ class BFGS(ScipyOptimizer):
         cost = self.cost
         params = cost.model.params
 
-        return minimize(cost, params, method='BFGS', options={'gtol': 1e-6, 'disp': True})
+        return opt.minimize(cost, params, method='BFGS', options={'gtol': 1e-6, 'disp': True})
 
 
 class GradientDescent(Optimizer):
