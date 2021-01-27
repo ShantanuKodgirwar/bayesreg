@@ -25,7 +25,7 @@ class Estimator:
 class LSQEstimator(Estimator):
     """LSQEstimator
 
-    Ordinary least squared estimator that minimizes sum-of-squared residuals 
+    Ordinary least squares (OLS) estimator that minimizes sum-of-squared residuals
     and calculates regression parameters  
     """
 

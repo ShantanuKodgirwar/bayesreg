@@ -496,4 +496,59 @@ Therefore this results to the following.
 \begin{equation}
     b_{\beta} = \frac{1}{\varepsilon\sigma^2}
 \end{equation}
+
+\section{Laplace distribution}
+
+The Laplace distribution is also called as the double exponential distribution because it can be thought of as 2 exponential distributions spliced together back-to-back. A random variable has a Laplace($\mu, \sigma$) distribution if its probability density function is given as follows.
+
+\begin{equation}
+    f(x \given \mu, \sigma) = \frac{1}{2\sigma}\exp{-\frac{\left\lvert x - \mu \right\rvert}{\sigma}}
+\end{equation}
+
+where, $\mu$ is the location parameter and $\sigma$ as scale parameter. 
+
+Under the assumption that every output/target values follows a Laplace distribution. The likelihood  $p(t_i \given \bm{X}, \bm{w}, \sigma)$ following the Laplace distribution is given as follows.
+\begin{equation}
+    p(t_i \mid \bm{X}, \bm{w}, \sigma) = \frac{1}{2\sigma}\exp\left\{{-\frac{\left\lvert t_i - (\bm{X w})_i \right\lvert}{\sigma}}\right\}
+\end{equation}
+
+Let us define a precision parameter $\beta$ which is given as follows.
+\begin{equation}
+    \beta = \frac{1}{\sigma}
+\end{equation}
+According to the product rule, the total likelihood is given as the product of the individual marginal probabilities as follows.
+\begin{equation}\label{eqn:total_laplace_likelihood}
+    p(\bm{t} \mid \bm{X}, \bm{w}, \beta) = \prod_{i=1}^Np(t_i \mid \bm{X}, \bm{w}, \beta)
+\end{equation}
+The log likelihood of the above equation \ref{eqn:total_laplace_likelihood} can be given as follows.
+\begin{eqnarray}
+    \ln{p(\bm{t} \mid \bm{X}, \bm{w}, \beta)} 
+    &=& 
+    \sum_{i=1}^N \ln p(t_i \given \bm{X}, \bm{w}, \beta) \\
+    &=&
+    \sum_{i=1}^N \ln{\left\{\frac{\beta}{2}\exp{\left(-\beta \left\lvert t_i - (\bm{X w})_i \right\lvert \right)}\right\}} \\
+    &=&
+    \frac{N}{2}\ln{\beta} - \beta \sum_{i=1}^N \left\lvert t_i - (\bm{X w})_i \right\lvert \\
+    &=&
+    \frac{N}{2}\ln{\beta} - \beta \norm{\bm{t} - \bm{X w}}
+\end{eqnarray}
+
+By maximizing the log likelihood with respect to $\bm{w}$, the value of $\mle{\bm{w}}$ can be found. However, it cannot be treated analytically. Therefore, a suitable optimizer such as Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm could be used. 
+
+After evaluating $\mle{\bm{w}}$, $\mle{\beta}$ could be found out by maximizing the log likelihood with respect to $\beta$. 
+\begin{eqnarray}
+    \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\bm{t} \given \bm{X}, \mle{\bm{w}}, \beta)} \right\} 
+    &\overset{!}{=} 0& \\
+    \frac{\partial }{\partial  \beta} \left\{\beta \norm{\bm{t} - \bm{X\mle{\bm{w}}}} - \frac{N}{2}\ln{\beta} \right\}
+    &\overset{!}{=} 0&
+\end{eqnarray}
+
+Therefore, $\mle{\beta}$ is given as follows
+
+\begin{equation}
+    \mle{\beta} = \frac{N}{2\norm{\bm{t} - \bm{X\mle{\bm{w}}}}}
+\end{equation}
+
+If priors are considered, such as Gamma priors or Jeffreys priors, the above equation would be modified.
+
 \end{document}

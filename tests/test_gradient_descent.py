@@ -24,6 +24,7 @@ def calc_grad_desc(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
     Returns
     -------
     poly(x): A fitted polynomial with calculated parameters
+    cost_iter: cost value list with iterations
 
     """
     data = reg.Data(np.transpose([x, y]))
@@ -61,7 +62,7 @@ def calc_barzilai_borwein(x, y, n_degree, learn_rate, num_iter, cost_expected=No
     Returns
     -------
     poly(x): A fitted polynomial with calculated parameters
-
+    cost_iter_bb: cost value list with iterations
     """
     data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.zeros(n_degree))
@@ -73,11 +74,11 @@ def calc_barzilai_borwein(x, y, n_degree, learn_rate, num_iter, cost_expected=No
     return poly(x), cost_iter_bb
 
 
-def calc_lsq_estimator(x, y, n_degree):
-    """calc_lsq_estimator
+def calc_lsq_ols(x, y, n_degree):
+    """calc_lsq_ols
 
-    Solves the least-squares equation method by the analytical solution and passes to
-    the polynomial class for fitting
+    Evaluates the least-squares cost function by an analytically, the ordinary least
+    squares (OLS) method.
 
     Parameters
     ----------
@@ -116,7 +117,7 @@ def main():
 
     # run LSQ estimator
     t2 = time.process_time()
-    y_lsq = calc_lsq_estimator(x_train, y_train, n_degree)
+    y_lsq = calc_lsq_ols(x_train, y_train, n_degree)
     t2 = time.process_time() - t2
     print('LSQ estimator time:', t2)
 
@@ -148,10 +149,8 @@ if __name__ == '__main__':
 
     x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
 
-    # predefined Gaussian noise with sigma = 0.2
-    noise_train = np.asarray([0.02333039, 0.05829248, -0.13038691, -0.29317861,
-                              -0.01635218, -0.08768144, 0.24820263, -0.08946657,
-                              0.36653148, 0.13669558])
+    # Gaussian training noise with a fixed seed value.
+    noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma, seed=10)
 
     # training response vector with noise
     y_train = true_model(x_train) + noise_train

@@ -46,11 +46,23 @@ class BFGS(ScipyOptimizer):
         assert isinstance(cost, LaplaceLikelihood)
         super().__init__(cost)
 
-    def run(self):
-        cost = self.cost
-        params = cost.model.params
+    def run(self, cost_expected=None):
+        params_init = self.cost.model.params
+        res = opt.minimize(self.cost, params_init, method='BFGS',
+                              options={'gtol': 1.5e-2, 'disp': True, 'return_all': True,
+                                       'maxiter': 2000})
+        params = res['x']
 
-        return opt.minimize(cost, params, method='BFGS', options={'gtol': 1e-6, 'disp': True})
+        cost_iter = []
+        for i in range(res['nit']):
+            cost_val = self.cost(res['allvecs'][i])
+            cost_iter.append(cost_val)
+
+        return params, cost_iter
+
+    # TODO: Stopping the iterations when cost_val = cost_expeceted, currently gtol used
+    #  to do that; Task to consider outlier using LAD and comparing the result
+    #  with LSQ; Trying other optimization techniques
 
 
 class GradientDescent(Optimizer):

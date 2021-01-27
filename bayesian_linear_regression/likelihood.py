@@ -160,7 +160,7 @@ class LaplaceLikelihood(LogLikelihood):
     def _eval(self, residuals):
         precision = self._precision
 
-        return precision * residuals - 0.5 * len(self.data.input) * np.log(precision)
+        return np.sqrt(precision) * np.linalg.norm(residuals) - 0.5 * len(self.data.input) * np.log(precision)
 
 
 class Regularizer(Likelihood):
