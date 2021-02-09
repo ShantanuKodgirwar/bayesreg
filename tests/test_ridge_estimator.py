@@ -32,10 +32,10 @@ def calc_ridge_estimator(x, y, n_degree, ridge_param):
     """
     Implements the necessary classes to predict values of response vector
     """
-    data = np.transpose([x, y])
+    data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(data, poly)
-    ridge = reg.RidgeRegularizer(poly, ridge_param)
+    lsq = reg.GaussianLikelihood(poly, data)
+    ridge = reg.Regularizer(poly, ridge_param)
     total_cost = reg.SumOfCosts(poly, lsq, ridge)
     estimator = reg.RidgeEstimator(total_cost)
     poly.params = estimator.run()
@@ -62,12 +62,12 @@ def calc_rmse_ridge(x_train, y_train, x_test, y_test, n_degree, lambda_logspace)
     train_error = []
     test_error = []
 
-    data = np.transpose([x_train, y_train])
+    data = reg.Data(np.transpose([x_train, y_train]))
     poly = reg.Polynomial(np.ones(n_degree))
 
     for ridge_param in lambda_logspace:
-        lsq = reg.LeastSquares(data, poly)
-        ridge = reg.RidgeRegularizer(poly, ridge_param)
+        lsq = reg.GaussianLikelihood(poly, data)
+        ridge = reg.Regularizer(poly, ridge_param)
         total_cost = reg.SumOfCosts(poly, lsq, ridge)
         estimator = reg.RidgeEstimator(total_cost)
         poly.params = estimator.run()
@@ -122,26 +122,29 @@ if __name__ == '__main__':
     train_error_ridge, test_error_ridge = calc_rmse_ridge(x_train, y_train, x_test, y_test,
                                                           n_degree, lambda_logspace)
 
+    lambda_vals = np.linspace(lambda_start, lambda_end, lambda_val)
+
+    # select the ridge parameter value
+    ridge_param = np.exp(lambda_vals[np.argmin(test_error_ridge)])
+    print(f'Best fit ridge parameter (log scale) is {lambda_vals[np.argmin(test_error_ridge)]}')
+
+    # fit the curve with the selected ridge parameter value
+    fitter_train = calc_ridge_estimator(x_train, y_train, n_degree, ridge_param)
+    fitter_test = calc_ridge_estimator(x_test, y_test, n_degree, ridge_param)
+
     # plot results
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     plt.subplots_adjust(hspace=0.3)
 
-    lambda_vals = np.linspace(lambda_start, lambda_end, lambda_val)
-
-    # select the ridge parameter value
-    ridge_param = np.exp(lambda_vals[np.argmin(test_error_ridge)])
-
     ax = axes[0]
     ax.set_title('Ridge Regression')
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
     ax.scatter(x_test, y_test, s=100, color='r', alpha=0.7)
     ax.plot(x_train, true_model(x_train), color='g', label='true model')
-    ax.plot(x_train, calc_ridge_estimator(x_train, y_train, n_degree, ridge_param),
-            label='training fit')
-    ax.plot(x_test, calc_ridge_estimator(x_test, y_test, n_degree, ridge_param), color='r',
-            label='testing fit')
+    ax.plot(x_train, fitter_train, label='training fit')
+    ax.plot(x_test, fitter_test, color='r', label='testing fit')
     ax.set_xlabel(r'$x_n$')
     ax.set_ylabel(r'$y_n$')
     ax.grid(linestyle='--')
@@ -159,3 +162,4 @@ if __name__ == '__main__':
 
     plt.show()
     unittest.main()
+

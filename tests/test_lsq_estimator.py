@@ -32,9 +32,9 @@ def calc_lsq_estimator(x, y, n_degree):
     """ 
     Implements the classes that calls the Ordinary Least-Square estimator 
     """
-    data = np.transpose([x, y])
+    data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(data, poly)
+    lsq = reg.GaussianLikelihood(poly, data)
     estimator = reg.LSQEstimator(lsq)
     poly.params = estimator.run()
 
@@ -58,14 +58,14 @@ def calc_rmse_lsq(x_train, y_train, x_test, y_test, n_degree):
     Training data and test data rms error by varying n_degree 
     """
 
-    data = np.transpose([x_train, y_train])
+    data = reg.Data(np.transpose([x_train, y_train]))
 
     train_error = []
     test_error = []
 
     for n_degree in range(1, len(x_train)):
         poly = reg.Polynomial(np.ones(n_degree))
-        lsq = reg.LeastSquares(data, poly)
+        lsq = reg.GaussianLikelihood(poly, data)
         estimator = reg.LSQEstimator(lsq)
         poly.params = estimator.run()
         train_error.append(reg.rmse(y_train, poly(x_train)))

@@ -7,8 +7,46 @@ import matplotlib.pyplot as plt
 import time
 
 
-def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
+def calc_grad_desc(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
     """calc_grad_desc
+
+    Solves the least-squares by gradient descent algorithm
+
+    Parameters
+    ----------
+    x: input training/testing set
+    y: output training/testing set
+    n_degree: degree of the fitting polynomial
+    learn_rate : Learning rate
+    num_iter : No. of iterations
+    cost_expected: A suitable minimum value of a cost function
+
+    Returns
+    -------
+    poly(x): A fitted polynomial with calculated parameters
+    cost_iter: cost value list with iterations
+
+    """
+    data = reg.Data(np.transpose([x, y]))
+    poly = reg.Polynomial(np.ones(n_degree))
+    lsq = reg.GaussianLikelihood(poly, data)
+    optimize = reg.GradientDescent(lsq, learn_rate, num_iter)
+
+    if cost_expected is not None:
+        params, cost_iter = optimize.run(cost_expected)
+        poly.params = params
+
+        return poly(x), cost_iter
+
+    else:
+        params, cost_iter = optimize.run()
+        poly.params = params
+
+        return poly(x), cost_iter
+
+
+def calc_barzilai_borwein(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
+    """calc_barzilai_borwein
 
     Solves the least-squares by gradient descent algorithm
 
@@ -17,56 +55,30 @@ def calc_grad_desc(x, y, learn_rate, num_iter, cost_expected=None):
     cost_expected: A suitable minimum value of a cost function
     x : input training/testing set
     y : output training/testing set
+    n_degree: degree of the fitting polynomial
     learn_rate : Learning rate
     num_iter : No. of iterations
 
     Returns
     -------
     poly(x): A fitted polynomial with calculated parameters
-
+    cost_iter_bb: cost value list with iterations
     """
-    data = np.transpose([x, y])
-    poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(data, poly)
-    optimize = reg.GradientDescent(lsq, learn_rate, num_iter)
-    params, cost_iter = optimize.run(cost_expected)
-    poly.params = params
-
-    return poly(x), cost_iter
-
-
-def calc_barzilai_borwein(x, y, learn_rate, num_iter, cost_expected=None):
-    """calc_barzilai_borwein
-
-    Solves the least-squares by gradient descent algorithm
-
-    Parameters
-    ----------
-    x : input training/testing set
-    y : output training/testing set
-    learn_rate : Learning rate
-    num_iter : No. of iterations
-
-    Returns
-    -------
-    poly(x): A fitted polynomial with calculated parameters
-
-    """
-    data = np.transpose([x, y])
+    data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.zeros(n_degree))
-    lsq = reg.LeastSquares(data, poly)
+    lsq = reg.GaussianLikelihood(poly, data)
     optimize = reg.BarzilaiBorwein(lsq, learn_rate, num_iter)
-    params, cost_iter_bb = optimize.run(cost_expected=None)
+    params, cost_iter_bb = optimize.run(cost_expected)
     poly.params = params
 
     return poly(x), cost_iter_bb
 
 
-def calc_lsq_estimator(x, y, n_degree):
-    """calc_lsq_estimator
+def calc_lsq_ols(x, y, n_degree):
+    """calc_lsq_ols
 
-    Solves the least-squares equation method by the analytical solution and passes to
-    the polynomial class for fitting
+    Evaluates the least-squares cost function by an analytically, the ordinary least
+    squares (OLS) method.
 
     Parameters
     ----------
@@ -79,9 +91,9 @@ def calc_lsq_estimator(x, y, n_degree):
     poly(x): A fitted polynomial with calculated parameters
     """
 
-    data = np.transpose([x, y])
+    data = reg.Data(np.transpose([x, y]))
     poly = reg.Polynomial(np.ones(n_degree))
-    lsq = reg.LeastSquares(data, poly)
+    lsq = reg.GaussianLikelihood(poly, data)
     estimator = reg.LSQEstimator(lsq)
     poly.params = estimator.run()
 
@@ -91,18 +103,27 @@ def calc_lsq_estimator(x, y, n_degree):
 def main():
 
     t = time.process_time()
-    y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, learn_rate, num_iter, cost_expected)
-    t = time.process_time() - t
-    print('Gradient descent time:', t)
+    if cost_expected is not None:
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
+                                                cost_expected)
+        t = time.process_time() - t
+        print('Gradient descent time:', t)
+
+    else:
+        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
+                                                cost_expected=None)
+        t = time.process_time() - t
+        print('Gradient descent time:', t)
 
     # run LSQ estimator
     t2 = time.process_time()
-    y_lsq = calc_lsq_estimator(x_train, y_train, n_degree)
+    y_lsq = calc_lsq_ols(x_train, y_train, n_degree)
     t2 = time.process_time() - t2
     print('LSQ estimator time:', t2)
 
     t3 = time.process_time()
-    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, init_learn_rate, num_iter_bb)
+    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, n_degree, init_learn_rate,
+                                                    num_iter_bb, cost_expected=None)
     t3 = time.process_time() - t3
     print('Barzilai-Borwein time :', t3)
 
@@ -124,12 +145,12 @@ if __name__ == '__main__':
 
     cost_expected = n_samples * sigma ** 2 / 2.  # expected chi-squared n_samples
 
+    # cost_expected = None
+
     x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
 
-    # predefined Gaussian noise with sigma = 0.2
-    noise_train = np.asarray([0.02333039, 0.05829248, -0.13038691, -0.29317861,
-                              -0.01635218, -0.08768144, 0.24820263, -0.08946657,
-                              0.36653148, 0.13669558])
+    # Gaussian training noise with a fixed seed value.
+    noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma, seed=10)
 
     # training response vector with noise
     y_train = true_model(x_train) + noise_train
@@ -139,7 +160,7 @@ if __name__ == '__main__':
     num_iter = int(1e4)  # No. of iterations
 
     # parameters for gradient descent with barzilai borwein method
-    num_iter_bb = int(1e2)
+    num_iter_bb = int(1.1e2)
     init_learn_rate = 1e-3
 
     cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb = main()
@@ -147,7 +168,7 @@ if __name__ == '__main__':
     # %% plot
     plt.rc('lines', lw=3)
     plt.rc('font', weight='bold', size=12)
-    fig, axes = plt.subplots(2, 2, figsize=(20, 15))
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
     plt.subplots_adjust(hspace=0.3)
 
     start = int(100)
@@ -157,7 +178,8 @@ if __name__ == '__main__':
     ax = axes[0, 0]
     ax.set_title('Cost for Gradient Descent')
     ax.plot(x_num_iter, cost_iter[start::])
-    ax.axhline(cost_expected, ls='--', color='r')
+    if cost_expected is not None:
+        ax.axhline(cost_expected, ls='--', color='r')
     ax.set_xlabel('num_iter', fontweight='bold')
     ax.set_ylabel('cost', fontweight='bold')
     ax.grid(linestyle='--')
@@ -181,7 +203,8 @@ if __name__ == '__main__':
     ax = axes[1, 0]
     ax.set_title('Cost for Barzilai-Borwein')
     ax.plot(x_num_iter, cost_iter_bb[start::])
-    ax.axhline(cost_expected, ls='--', color='r')
+    if cost_expected is not None:
+        ax.axhline(cost_expected, ls='--', color='r')
     ax.set_xlabel('num_iter', fontweight='bold')
     ax.set_ylabel('cost', fontweight='bold')
     ax.grid(linestyle='--')

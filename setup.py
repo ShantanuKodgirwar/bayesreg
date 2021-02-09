@@ -9,13 +9,13 @@ try:
 except IOError:
     pass
 
-NAME        = "bayesian_linear_regression"
-VERSION     = "0.1"
-AUTHOR      = "Shantanu Kodgirwar, Michael Habeck"
-EMAIL       = "shantanu.kodgirwar@uni-jena.de, michael.habeck@uni-jena.de"
+NAME = "bayesian_linear_regression"
+VERSION = "0.1"
+AUTHOR = "Shantanu Kodgirwar, Michael Habeck"
+EMAIL = "shantanu.kodgirwar@uni-jena.de, michael.habeck@uni-jena.de"
 DESCRIPTION = __doc__
-LICENSE     = 'MIT'
-REQUIRES    = ['numpy', 'scipy', 'matplotlib', 'sklearn']
+LICENSE = 'MIT'
+REQUIRES = ['numpy', 'scipy', 'matplotlib', 'sklearn']
 
 setup(
     name=NAME,
@@ -26,16 +26,16 @@ setup(
     long_description=DESCRIPTION,
     license=LICENSE,
     requires=REQUIRES,
-    classifiers=(
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3.6+',
-    'Topic :: Scientific/Engineering',
-    'Topic :: Scientific/Engineering :: Mathematics',
-    'Topic :: Scientific/Engineering :: Physics',
-    'Topic :: Software Development :: Libraries')
-    )
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.6+',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Software Development :: Libraries']
+)

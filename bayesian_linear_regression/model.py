@@ -24,23 +24,23 @@ class LinearModel:
     def __len__(self):
         return len(self._params)
 
-    def __call__(self, x):
-        return self._eval(x)
+    def __call__(self, input_val):
+        return self._eval(input_val)
 
-    def _eval(self, x):
+    def _eval(self, input_val):
         msg = 'Needs to be implemented by subclass'
         raise NotImplementedError(msg)
 
-    def compute_design_matrix(self, x):
+    def compute_design_matrix(self, input_val):
         current_params = self.params.copy()
-        matrix = np.empty((len(x), len(self)))
+        design_matrix = np.empty((len(input_val), len(self)))
         for i, params in enumerate(np.eye(len(self))):
             self.params = params
-            matrix[:, i] = self(x)
+            design_matrix[:, i] = self(input_val)
 
         self.params = current_params
 
-        return matrix
+        return design_matrix
 
 
 class StraightLine(LinearModel):
@@ -51,17 +51,17 @@ class StraightLine(LinearModel):
 
         super().__init__(params)
 
-    def _eval(self, x):
-        return self._params[0] + self._params[1] * x
+    def _eval(self, input_val):
+        return self._params[0] + self._params[1] * input_val
 
 
 class Polynomial(LinearModel):
 
-    def _eval(self, x):
-        return np.polyval(self._params[::-1], x)
+    def _eval(self, input_val):
+        return np.polyval(self._params[::-1], input_val)
 
-    def compute_design_matrix(self, x):
-        return np.power.outer(x, np.arange(len(self)))
+    def compute_design_matrix(self, input_val):
+        return np.power.outer(input_val, np.arange(len(self)))
 
 
 class Sinusoid(LinearModel):
@@ -73,8 +73,8 @@ class Sinusoid(LinearModel):
     def __init__(self):
         super().__init__([1.])
 
-    def _eval(self, x):
-        return self.params[0] * np.sin(2 * np.pi * x)
+    def _eval(self, input_val):
+        return self.params[0] * np.sin(2 * np.pi * input_val)
 
 
 class Sinc(LinearModel):
@@ -85,5 +85,5 @@ class Sinc(LinearModel):
     def __init__(self):
         super().__init__([1.])
 
-    def _eval(self, x):
-        return self.params[0] * np.sinc(x)
+    def _eval(self, input_val):
+        return self.params[0] * np.sinc(input_val)
