@@ -50,7 +50,16 @@
 
 \maketitle
 
-\section{Maximum likelihood estimation}
+\section{Gaussian Distribution}
+
+In the case of a single variable $x$, the Gaussian/normal distribution can be written in the form
+
+\begin{equation}
+    \mathcal{N}(x \given \mu, \sigma^2) = \sqrt{\frac{1}{2\pi \sigma^2}}\exp{\left\{-\frac{1}{2\sigma^2}\left(x - \mu \right)^2\right\}}
+\end{equation}
+
+where, $\mu$ is the mean and $\sigma^2$ is the variance.
+\subsection{Maximum likelihood estimation}
 
 Input vectors are given as $\bm{x} = (x_1, \ldots, x_N)^T$ and the output/target variables as $\bm{t} = (t_1, \ldots, t_N)^T$ and the polynomial coefficients as $\bm{w} = (w_1, \ldots, w_M)^T$.
 \begin{eqnarray}
@@ -101,6 +110,11 @@ The log likelihood of equation \ref{eqn:likelihood} is given as
     \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 
 \end{eqnarray}
 
+Therefore,
+\begin{equation}
+    \ln p(\bm{t} \given \bm{X}, \bm{w}, \beta) \propto -\frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2
+\end{equation}
+
 The posterior probability to determine the parameters is given as the product of likelihood function and prior.
 \begin{equation} 
     p(\bm{w} \given \bm{t}, \bm{X}, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\bm{w})
@@ -145,11 +159,11 @@ Therefore, the value $\mle{\beta}$ is determined to be
     \mle{\beta} = \frac{N}{\norm{\bm{t} - \bm{X}\mle{\bm{w}}}^2}
 \end{equation}
 
-\section{Maximum a posteriori estimation}
+\subsection{Maximum a posteriori estimation}
 
 In the case of maximum a posteriori (MAP) estimation, the distribution of prior over parameters is known. 
 
-\subsection{Gaussian distribution of prior}
+\subsubsection{Conjugate Gaussian prior}
 
 The prior distribution is given as follows
 \begin{equation} \label{prior_alpha}
@@ -174,6 +188,10 @@ The log likelihood is known from equation \ref{eqn:log_likelihood}. Therefore,
     \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 + \frac{M}{2} \ln{\left( \frac{\alpha}{2\pi} \right)} - \frac{\alpha}{2}\norm{\bm{w}}^2
 \end{equation}
 
+Therefore,
+\begin{equation}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 - \frac{\alpha}{2}\norm{\bm{w}}^2
+\end{equation}
 
 Maximizing the negative log of posterior with respect to $\bm{w}$.
 \begin{eqnarray}
@@ -190,9 +208,7 @@ Let us assign a regularization parameter $\lambda = \alpha/\beta$. Therefore, th
     \map{\bm{w}} = \left(\bm{X}^T\bm{X} + \lambda\eye\right)^{-1}\bm{X}^T\bm{t}
 \end{equation}
 
-\subsection{Jeffreys prior}
-\subsubsection{Evaluation for precision parameter $\bm{\beta}$}
-
+\subsubsection{Jeffreys prior}
 Jeffreys prior is given as
 \begin{equation}
     p(\sigma) = \frac{1}{\sigma} 
@@ -211,6 +227,12 @@ Therefore,
     p(\beta) = \frac{1}{\beta}
 \end{equation}
 
+\vspace{5mm}
+
+\textit{\underline{Evaluation for precision parameter $\bm{\beta}$}}
+
+\vspace{5mm}
+
 The posterior distribution is given as
 \begin{equation}
     p(\bm{w} \given \bm{t}, \bm{X}, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\beta)
@@ -226,26 +248,11 @@ Using equation \ref{eqn:log_likelihood} to give the log likelihood, the above eq
     \ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} = \frac{N}{2}\ln{\beta} - \frac{N}{2}\ln{2\pi} - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 - \ln{\beta}
 \end{equation}
 
-Maximizing the log posterior with respect to $\bm{w}$,
-\begin{eqnarray}
-    \frac{\partial }{\partial  \bm{w}} \left\{ -\ln{p(\bm{w} \given \bm{t}, \bm{X}, \beta)} \right\} 
-    &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2  \right\}
-    &\overset{!}{=} 0& \\
-    \frac{\partial }{\partial \bm{w}} \left\{\frac{\beta}{2} \left(\bm{t} - \bm{X}\bm{w}\right)^T \left(\bm{t} - \bm{X}\bm{w}\right) \right\}
-    &\overset{!}{=} 0& \\
-    \beta \left( \bm{X}^T\bm{X}\bm{w} - \bm{X}^T \bm{t} \right) 
-    &\overset{!}{=} 0& 
-\end{eqnarray}
+For MAP estimation on $\bm{w}$, $\map{\bm{w}} = \mle{\bm w}$ (refer equation \ref{eqn:w_ML}) because only a Gaussian likelihood is used for parameter distribution. 
 
-Therefore, we find that, $\map{\bm{w}}$ is
-\begin{equation}
-    \map{\bm{w}} = (\bm{X}^T \bm{X})^{-1} \bm{X}^T \bm{t}
-\end{equation}
+\vspace{5mm}
 
-We can see that $\map{\bm{w}} = \mle{\bm w}$ (refer equation \ref{eqn:w_ML}). 
-
-Now, maximizing the log posterior with respect to $\beta$, equation \ref{eqn:log_posterior_jeffreys} is used.
+Maximizing the log posterior with respect to $\beta$, equation \ref{eqn:log_posterior_jeffreys} is used.
 \begin{eqnarray}
     \frac{\partial }{\partial  \beta} \left\{ -\ln{p(\map{\bm{w}} \given \bm{t}, \bm{X}, \beta)} \right\} 
     &\overset{!}{=} 0& \\
@@ -261,7 +268,7 @@ Therefore,
     \map{\beta} = \frac{N-2}{\norm{\bm{t} - \bm{X}\map{\bm{w}}}^2}
 \end{equation}
 
-\subsubsection{Evaluation for hyperparameter $\bm{\alpha}$}
+\subsection{Jeffreys hyperprior with conjugate Gaussian prior}
 
 Jeffreys prior for the hyperparameter $\alpha$ is given as follows,
 \begin{equation} \label{eqn:alpha_jeffreys}
@@ -273,7 +280,7 @@ The joint distribution $p(w,\alpha)$ is given as follows
     p(\bm{w}, \alpha) = p(\bm{w} \given \alpha)p(\alpha)
 \end{equation}
 
-The distribution $p(\bm{w} \given \alpha)$ is known from equation \ref{prior_alpha}. Therefore, the joint probability $p(w, \alpha)$ is evaluated as follows.
+The distribution $p(\bm{w} \given \alpha)$ is known from equation \ref{prior_alpha}. Therefore, the joint probability $p(w, \alpha)$, i.e, Jeffreys hyperprior over hyperparameter $\alpha$ and Gaussian prior over parameter $\bm{w}$ is evaluated as follows.
 \begin{eqnarray}
     p(\bm{w}, \alpha) 
     &=&
@@ -283,7 +290,11 @@ The distribution $p(\bm{w} \given \alpha)$ is known from equation \ref{prior_alp
     \left( \frac{\alpha}{2\pi}\right)^{\left( M-2\right)/2} \exp{\left\{ -\frac{\alpha}{2}\norm{\bm{w}}^2\right\}}
 \end{eqnarray}
 
-The posterior distribution is given as follows.
+\vspace{5mm}
+\textit{\underline{Evaluation for hyperparameter $\bm{\alpha}$, precision parameter $\bm{\beta}$, parameter $\bm{w}$}}
+\vspace{5mm}
+
+The posterior distribution (Conjugate Gaussian prior and Jeffreys prior combined) is given as follows.
 \begin{equation}
     p(\bm{w}, \alpha, \beta \given \bm{t}, \bm{X}) \propto p(\bm{t} \given \bm{X}, \bm{w}, \alpha, \beta) p(\bm{w}, \alpha) p(\beta)
 \end{equation}
@@ -344,6 +355,65 @@ Therefore, $\map{\alpha}$ is given as follows.
     \map{\alpha} = \frac{M-2}{\norm{\map{\bm{w}}}^2}
 \end{equation}
 
+\section{Multivariate Gaussian Distribution}
+For a N-dimensional vector $\bm{x} = (x_1, \ldots, x_N)^T$, the multivariate Gaussian distribution takes the following form
+
+\begin{equation}
+    \mathcal{N}(x \given \bm{\mu}, \bm{\Sigma}) = \frac{1}{(2\pi)^{N/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\left\{-\frac{1}{2}\left(\bm{x} - \bm{\mu} \right)^T\bm{\Sigma}^{-1}\left(\bm{x} - \bm{\mu} \right)\right\}}
+\end{equation}
+
+where $\bm{\mu}$ is an N-dimensional mean vector, $\bm{\Sigma}$ is an $N$ $\times$ $N$ covariance matrix and $|\bm{\Sigma}|$ is the determinant of $\bm{\Sigma}$.
+
+\subsection{Conjugate Bayesian analysis of the Gaussian distribution}
+In the conjugate Bayesian analysis, the prior and likelihood distribution is the same. It can be shown that the resulting posterior is a multivariate Gaussian when the prior and likelihood are a Gaussian distribution. 
+
+Rewriting the posterior distribution as proportional to likelihood and prior.
+\begin{equation}
+    p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta) \propto p(\bm{t} \given \bm{X}, \bm{w}, \beta) p(\bm{w} \given \alpha)
+\end{equation}
+
+Therefore, it can be shown that the $\ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)}$ for a Gaussian distribution as 
+\begin{equation}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto - \frac{\beta}{2} \norm{\bm{t} - \bm{Xw}}^2 - \frac{\alpha}{2}\norm{\bm{w}}^2
+\end{equation}
+
+Evaluating this further,
+\begin{eqnarray}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto -\frac{\beta}{2} (\bm{t} - \bm{Xw})^T (\bm{t} - \bm{Xw}) - \frac{\alpha}{2} \bm{w}^T\bm{w}\\
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto -\frac{1}{2} \bm{w}^T (\underbrace{\beta \bm{X}^T\bm{X} + \alpha \bm{I}}_{\bm{\Sigma}^{-1}}) \bm{w}  + \bm{w}^T\underbrace{\beta\bm{X}^T \bm{t}}_{\bm{\Sigma}^{-1} \bm{\mu}}
+\end{eqnarray}
+
+Therefore, $\bm{\Sigma}$ and $\bm{\mu}$ is given as
+\begin{equation}
+    \bm{\Sigma} = (\beta \bm{X}^T\bm{X} + \alpha \bm{I})^{-1}
+\end{equation}
+\begin{equation}
+    \bm{\mu} = \bm{\Sigma}\beta \bm{X}^T \bm{t} 
+\end{equation}
+\begin{equation}
+    \bm{\mu} = (\beta \bm{X}^T\bm{X} + \alpha \bm{I})^{-1}\beta \bm{X}^T \bm{t}
+\end{equation}
+\begin{eqnarray}
+    \bm{\mu} = (\beta \bm{X}^T\bm{X} + \alpha \bm{I})^{-1}\beta \bm{X}^T \bm{t} \\
+    \bm{\mu} = (\bm{X}^T\bm{X} + \lambda \bm{I})^{-1}\bm{X}^T \bm{t} \\
+    \bm{\mu} \equiv \map{w}
+\end{eqnarray}
+
+The posterior $\ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)}$ is further given as follows
+\begin{eqnarray}
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto -\frac{1}{2} \bm{w}^T \bm{\Sigma}^{-1} \bm{w}  + \bm{w}^T \bm{\Sigma}^{-1} \bm{\mu}\\
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto -\frac{1}{2} \bm{w}^T \bm{\Sigma}^{-1} \bm{w}  + \bm{w}^T \bm{\Sigma}^{-1} \bm{\mu} + \frac{1}{2}\bm{\mu}^T\bm{\Sigma}^{-1}\bm{\mu} - \frac{1}{2}\bm{\mu}^T\bm{\Sigma}^{-1}\bm{\mu} \\
+    \ln{p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta)} \propto -\frac{1}{2}\left(\bm{w} - \bm{\mu}\right)^T\bm{\Sigma}^{-1}\left(\bm{w} - \bm{\mu}\right) + \frac{1}{2}\bm{\mu}^T\bm{\Sigma}^{-1}\bm{\mu}\\
+    p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta) \propto \exp{\left\{ -\frac{1}{2}\left(\bm{w} - \bm{\mu}\right)^T\bm{\Sigma}^{-1}\left(\bm{w} - \bm{\mu}\right) \right\}}
+\end{eqnarray}
+
+The posterior over the regression parameters $w = (w_1,w_2,...,w_M)^T$ is a multivariate Gaussian.
+\begin{equation}
+    p(\bm{w} \given \bm{t}, \bm{X}, \alpha, \beta) = \frac{1}{|2\pi|^{(M+1)/2}}\frac{1}{|\bm{\Sigma}|^{1/2}} \exp\left\{-\frac{1}{2} (\bm{w} - \bm{\mu})^T \bm{\Sigma}^{-1} (\bm{w} - \bm{\mu}) \right\}
+\end{equation}
+
+where $\bm{\Sigma}$ is an $(M+1)$$\times$$(M+1)$ covariance matrix, given as $\bm{\Sigma} = (\beta \bm{X}^T\bm{X} + \alpha \bm{I})^{-1}$, $|\bm{\Sigma}|$ is the determinant of $\bm{\Sigma}$. and $\bm{\mu}$ is an $(M+1)$-dimensional mean vector given as $\bm{\mu} = \bm{\Sigma}\beta \bm{X}^T \bm{t}$.
+
 \section{Gamma Distribution}
 
 The likelihood function for the target values given $\beta$ (precision parameter) can be written as 
@@ -371,6 +441,7 @@ The mode, $\text{mode}\left[\beta\right]$ which is equivalent to maximizing the 
     \text{mode}\left[\beta\right] = \frac{a-1}{b}
 \end{equation}
 
+\subsection{Jeffreys Priors}
 Let us consider the posterior distribution considering the Jeffreys prior for $p(\beta)$ as given in equation \ref{eqn:beta_jeffreys}.
 \begin{eqnarray}
     p(\bm{w} \given \bm{t}, \bm{X}, \beta) 
