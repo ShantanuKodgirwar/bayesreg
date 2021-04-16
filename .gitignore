@@ -171,3 +171,6 @@ fabric.properties
 
 #ignore ipynb checkpoint file
 .ipynb_checkpoints
+
+#vscode settings
+.vscode/
