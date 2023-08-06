@@ -8,7 +8,7 @@ import scipy.optimize as opt
 
 class Optimizer:
     """Optimizer
-    
+
     Evaluates different optimization algorithms
     """
 
@@ -17,7 +17,7 @@ class Optimizer:
         self.cost = cost
 
     def run(self, *args):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
 
@@ -31,7 +31,7 @@ class ScipyOptimizer(Optimizer):
         super().__init__(cost)
 
     def run(self, *args):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
 
@@ -48,14 +48,17 @@ class BFGS(ScipyOptimizer):
 
     def run(self, cost_expected=None):
         params_init = self.cost.model.params
-        res = opt.minimize(self.cost, params_init, method='BFGS',
-                              options={'gtol': 1.5e-2, 'disp': True, 'return_all': True,
-                                       'maxiter': 2000})
-        params = res['x']
+        res = opt.minimize(
+            self.cost,
+            params_init,
+            method="BFGS",
+            options={"gtol": 1.5e-2, "disp": True, "return_all": True, "maxiter": 2000},
+        )
+        params = res["x"]
 
         cost_iter = []
-        for i in range(res['nit']):
-            cost_val = self.cost(res['allvecs'][i])
+        for i in range(res["nit"]):
+            cost_val = self.cost(res["allvecs"][i])
             cost_iter.append(cost_val)
 
         return params, cost_iter
@@ -67,7 +70,7 @@ class BFGS(ScipyOptimizer):
 
 class GradientDescent(Optimizer):
     """GradientDescent
-    
+
     Implements the batch gradient descent algorithm for parameter estimation
 
     Parameters
@@ -98,7 +101,7 @@ class GradientDescent(Optimizer):
                 cost = self.cost(params)
                 cost_iter.append(cost)
                 if cost <= cost_expected:
-                    print('Iterations for gradient descent are: ', i+1)
+                    print("Iterations for gradient descent are: ", i + 1)
                     return params, cost_iter
 
         for i in range(num_iter):
@@ -147,7 +150,9 @@ class BarzilaiBorwein(GradientDescent):
             if i > 0:
                 diff_params = curr_params - prev_params
                 diff_grad = curr_grad - prev_grad
-                learn_rate = np.linalg.norm(diff_params) ** 2 / np.dot(diff_params, diff_grad)
+                learn_rate = np.linalg.norm(diff_params) ** 2 / np.dot(
+                    diff_params, diff_grad
+                )
 
             prev_params = curr_params
             prev_grad = curr_grad
@@ -156,7 +161,5 @@ class BarzilaiBorwein(GradientDescent):
             cost_val = cost(params)
             cost_iter.append(cost_val)
 
-        print('Iterations for barzilai-borwein are: ', num_iter)
+        print("Iterations for barzilai-borwein are: ", num_iter)
         return params, cost_iter
-
-

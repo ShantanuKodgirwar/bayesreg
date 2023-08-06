@@ -27,7 +27,7 @@ class Prior:
         return self._eval(params)
 
     def _eval(self, params):
-        msg = 'Needs to be implemented in subclass'
+        msg = "Needs to be implemented in subclass"
         assert NotImplementedError, msg
 
 
@@ -47,7 +47,7 @@ class HyperPrior:
         return self._eval(precision_param)
 
     def _eval(self, precision_param):
-        msg = 'Needs to be implemented in subclass'
+        msg = "Needs to be implemented in subclass"
         assert NotImplementedError, msg
 
 
@@ -112,4 +112,3 @@ class GammaPrior(HyperPrior):
         shape = self.shape
 
         return rate * precision_param - (shape - 1) * np.log(precision_param)
-

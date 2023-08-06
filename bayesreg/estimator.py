@@ -18,7 +18,7 @@ class Estimator:
         self.cost = cost
 
     def run(self, *args):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
 
@@ -26,7 +26,7 @@ class LSQEstimator(Estimator):
     """LSQEstimator
 
     Ordinary least squares (OLS) estimator that minimizes sum-of-squared residuals
-    and calculates regression parameters  
+    and calculates regression parameters
     """
 
     def __init__(self, cost):
@@ -45,7 +45,6 @@ class LSQEstimator(Estimator):
 
 
 class SVDEstimator(LSQEstimator):
-
     def run(self, *args):
         model = self.cost.model
         data = self.cost.data
@@ -63,12 +62,11 @@ class RidgeEstimator(Estimator):
 
     W = (beta * X.T*X + alpha*A)^{-1}*X.T*t
 
-    Generalized Ridge regularizer estimator (modified LSQEstimator) that 
+    Generalized Ridge regularizer estimator (modified LSQEstimator) that
     minimizes sum-of-squares residuals
     """
 
     def __init__(self, sum_of_costs):
-
         assert isinstance(sum_of_costs, SumOfCosts)
 
         for cost in sum_of_costs:
@@ -77,12 +75,10 @@ class RidgeEstimator(Estimator):
         super().__init__(sum_of_costs)
 
     def run(self):
-
-        a = 0.
-        b = 0.
+        a = 0.0
+        b = 0.0
 
         for cost in self.cost:
-
             if isinstance(cost, Regularizer):
                 a += cost.hyperparameter * cost.A
 
@@ -108,7 +104,6 @@ class PrecisionEstimator(Estimator):
     """
 
     def __init__(self, cost, hyperprior=None):
-
         if hyperprior is not None:
             assert isinstance(hyperprior, GammaPrior)
         self.hyperprior = hyperprior
@@ -124,8 +119,9 @@ class PrecisionEstimator(Estimator):
             residuals = self.cost.residuals
 
             if self.hyperprior is not None:
-                return (len(data.input) - 2 + 2 * self.hyperprior.shape)\
-                       / (np.linalg.norm(residuals) ** 2 + 2 * self.hyperprior.rate)
+                return (len(data.input) - 2 + 2 * self.hyperprior.shape) / (
+                    np.linalg.norm(residuals) ** 2 + 2 * self.hyperprior.rate
+                )
             else:
                 return (len(data.input) - 2) / (np.linalg.norm(residuals) ** 2)
 
@@ -133,7 +129,8 @@ class PrecisionEstimator(Estimator):
             params = self.cost.model.params
 
             if self.hyperprior is not None:
-                return (len(params) - 2 + 2 * self.hyperprior.shape)\
-                       / (np.linalg.norm(params) ** 2 + 2 * self.hyperprior.rate)
+                return (len(params) - 2 + 2 * self.hyperprior.shape) / (
+                    np.linalg.norm(params) ** 2 + 2 * self.hyperprior.rate
+                )
             else:
                 return (len(params) - 2) / (np.linalg.norm(params) ** 2)

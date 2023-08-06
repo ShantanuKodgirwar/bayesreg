@@ -30,7 +30,7 @@ class Likelihood:
         return self._get_precision()
 
     def _get_precision(self):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
     @precision.setter
@@ -38,7 +38,7 @@ class Likelihood:
         self._set_precision(value)
 
     def _set_precision(self, value):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
     @property
@@ -46,7 +46,7 @@ class Likelihood:
         return self._get_hyperparameter()
 
     def _get_hyperparameter(self):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
     @hyperparameter.setter
@@ -54,7 +54,7 @@ class Likelihood:
         self._set_hyperparameter(value)
 
     def _set_hyperparameter(self, value):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
     def __call__(self, params):
@@ -67,10 +67,10 @@ class Likelihood:
 
     @property
     def has_gradient(self):
-        return hasattr(self, 'gradient')
+        return hasattr(self, "gradient")
 
     def gradient(self, params):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         return NotImplementedError(msg)
 
 
@@ -88,7 +88,7 @@ class LogLikelihood(Likelihood):
     precision: Parameter that is the inverse of the variance (sigma^2); default=1.
     """
 
-    def __init__(self, model, data, precision=1.):
+    def __init__(self, model, data, precision=1.0):
         super().__init__(model)
 
         assert isinstance(data, Data)
@@ -113,7 +113,7 @@ class LogLikelihood(Likelihood):
         return self._eval(self.residuals)
 
     def _eval(self, residuals):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         return NotImplementedError(msg)
 
 
@@ -134,8 +134,9 @@ class GaussianLikelihood(LogLikelihood):
     def _eval(self, residuals):
         precision = self._precision
 
-        return 0.5 * precision * residuals.dot(residuals) - 0.5 * len(self.data.input) \
-               * np.log(precision)
+        return 0.5 * precision * residuals.dot(residuals) - 0.5 * len(
+            self.data.input
+        ) * np.log(precision)
 
     def gradient(self, params=None):
         if params is not None:
@@ -160,7 +161,9 @@ class LaplaceLikelihood(LogLikelihood):
     def _eval(self, residuals):
         precision = self._precision
 
-        return np.sqrt(precision) * np.linalg.norm(residuals) - 0.5 * len(self.data.input) * np.log(precision)
+        return np.sqrt(precision) * np.linalg.norm(residuals) - 0.5 * len(
+            self.data.input
+        ) * np.log(precision)
 
 
 class Regularizer(Likelihood):
@@ -179,7 +182,7 @@ class Regularizer(Likelihood):
     A: General parameter based on a model that is chosen (default: A=I)
     """
 
-    def __init__(self, model, hyperparameter=1., A=None):
+    def __init__(self, model, hyperparameter=1.0, A=None):
         super().__init__(model)
 
         if hyperparameter is not None:
@@ -189,10 +192,10 @@ class Regularizer(Likelihood):
             A = np.eye(len(model))
 
         else:
-            msg = 'A must be a symmetric matrix'
+            msg = "A must be a symmetric matrix"
             assert np.allclose(A, A.T, rtol=1e-05, atol=1e-08), msg
 
-            msg = 'A must be positive semi-definite'
+            msg = "A must be positive semi-definite"
             assert np.linalg.eigvalsh(A) >= 0, msg
 
         self.A = A
@@ -207,8 +210,9 @@ class Regularizer(Likelihood):
         params = self.model.params
         hyperparameter = self._hyperparameter
 
-        return 0.5 * hyperparameter * params.dot(self.A.dot(params)) \
-               - 0.5 * len(params) * np.log(hyperparameter)
+        return 0.5 * hyperparameter * params.dot(self.A.dot(params)) - 0.5 * len(
+            params
+        ) * np.log(hyperparameter)
 
 
 class SumOfCosts(Likelihood):

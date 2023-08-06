@@ -17,7 +17,7 @@ class Posterior:
         self.estimator = estimator
 
     def run(self, *args):
-        msg = 'Needs to be implemented by a subclass'
+        msg = "Needs to be implemented by a subclass"
         raise NotImplementedError(msg)
 
 
@@ -69,22 +69,18 @@ class JeffreysPosterior(Posterior):
             self.alpha_estimator.cost.hyperparameter = alpha
             self.beta_estimator.cost.precision = beta
 
-            log_likelihood_prior = - self.estimator.cost(params)
+            log_likelihood_prior = -self.estimator.cost(params)
 
             if gamma_prior_alpha is not None:
                 assert isinstance(gamma_prior_alpha, GammaPrior)
 
-            log_hyperpriors = - gamma_prior_alpha(alpha)
+            log_hyperpriors = -gamma_prior_alpha(alpha)
 
             if gamma_prior_beta is not None:
                 assert isinstance(gamma_prior_beta, GammaPrior)
 
-            log_hyperpriors += - gamma_prior_beta(beta)
+            log_hyperpriors += -gamma_prior_beta(beta)
             log_posterior = log_likelihood_prior + log_hyperpriors
             states.append((params.copy(), beta, alpha, log_posterior))
 
         return states
-
-
-
-

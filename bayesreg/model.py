@@ -28,7 +28,7 @@ class LinearModel:
         return self._eval(input_val)
 
     def _eval(self, input_val):
-        msg = 'Needs to be implemented by subclass'
+        msg = "Needs to be implemented by subclass"
         raise NotImplementedError(msg)
 
     def compute_design_matrix(self, input_val):
@@ -44,9 +44,8 @@ class LinearModel:
 
 
 class StraightLine(LinearModel):
-
-    def __init__(self, params=[0., 1.]):
-        msg = 'A straight line has only two parameters: slope and intercept'
+    def __init__(self, params=[0.0, 1.0]):
+        msg = "A straight line has only two parameters: slope and intercept"
         assert len(params) == 2, msg
 
         super().__init__(params)
@@ -56,7 +55,6 @@ class StraightLine(LinearModel):
 
 
 class Polynomial(LinearModel):
-
     def _eval(self, input_val):
         return np.polyval(self._params[::-1], input_val)
 
@@ -71,7 +69,7 @@ class Sinusoid(LinearModel):
     """
 
     def __init__(self):
-        super().__init__([1.])
+        super().__init__([1.0])
 
     def _eval(self, input_val):
         return self.params[0] * np.sin(2 * np.pi * input_val)
@@ -83,7 +81,7 @@ class Sinc(LinearModel):
     """
 
     def __init__(self):
-        super().__init__([1.])
+        super().__init__([1.0])
 
     def _eval(self, input_val):
         return self.params[0] * np.sinc(input_val)
