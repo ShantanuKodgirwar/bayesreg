@@ -1,10 +1,12 @@
 """
 Testing Gradient Descent algorithm
 """
-import numpy as np
-import bayesian_linear_regression as reg
-import matplotlib.pyplot as plt
 import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import bayesreg as reg
 
 
 def calc_grad_desc(x, y, n_degree, learn_rate, num_iter, cost_expected=None):
@@ -101,37 +103,38 @@ def calc_lsq_ols(x, y, n_degree):
 
 
 def main():
-
     t = time.process_time()
     if cost_expected is not None:
-        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
-                                                cost_expected)
+        y_grad_desc, cost_iter = calc_grad_desc(
+            x_train, y_train, n_degree, learn_rate, num_iter, cost_expected
+        )
         t = time.process_time() - t
-        print('Gradient descent time:', t)
+        print("Gradient descent time:", t)
 
     else:
-        y_grad_desc, cost_iter = calc_grad_desc(x_train, y_train, n_degree, learn_rate, num_iter,
-                                                cost_expected=None)
+        y_grad_desc, cost_iter = calc_grad_desc(
+            x_train, y_train, n_degree, learn_rate, num_iter, cost_expected=None
+        )
         t = time.process_time() - t
-        print('Gradient descent time:', t)
+        print("Gradient descent time:", t)
 
     # run LSQ estimator
     t2 = time.process_time()
     y_lsq = calc_lsq_ols(x_train, y_train, n_degree)
     t2 = time.process_time() - t2
-    print('LSQ estimator time:', t2)
+    print("LSQ estimator time:", t2)
 
     t3 = time.process_time()
-    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(x_train, y_train, n_degree, init_learn_rate,
-                                                    num_iter_bb, cost_expected=None)
+    y_grad_bb, cost_iter_bb = calc_barzilai_borwein(
+        x_train, y_train, n_degree, init_learn_rate, num_iter_bb, cost_expected=None
+    )
     t3 = time.process_time() - t3
-    print('Barzilai-Borwein time :', t3)
+    print("Barzilai-Borwein time :", t3)
 
     return cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     # %% input parameters
     t = time.process_time()
 
@@ -143,11 +146,11 @@ if __name__ == '__main__':
 
     sigma = 0.2  # Gaussian noise parameter
 
-    cost_expected = n_samples * sigma ** 2 / 2.  # expected chi-squared n_samples
+    cost_expected = n_samples * sigma**2 / 2.0  # expected chi-squared n_samples
 
     # cost_expected = None
 
-    x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
+    x_train = np.linspace(0.0, 1.0, n_samples)  # define training data input vector x
 
     # Gaussian training noise with a fixed seed value.
     noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma, seed=10)
@@ -166,8 +169,8 @@ if __name__ == '__main__':
     cost_iter, y_grad_desc, y_lsq, y_grad_bb, cost_iter_bb = main()
 
     # %% plot
-    plt.rc('lines', lw=3)
-    plt.rc('font', weight='bold', size=12)
+    plt.rc("lines", lw=3)
+    plt.rc("font", weight="bold", size=12)
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))
     plt.subplots_adjust(hspace=0.3)
 
@@ -176,24 +179,24 @@ if __name__ == '__main__':
     x_num_iter = np.linspace(start, stop, stop - start)
 
     ax = axes[0, 0]
-    ax.set_title('Cost for Gradient Descent')
+    ax.set_title("Cost for Gradient Descent")
     ax.plot(x_num_iter, cost_iter[start::])
     if cost_expected is not None:
-        ax.axhline(cost_expected, ls='--', color='r')
-    ax.set_xlabel('num_iter', fontweight='bold')
-    ax.set_ylabel('cost', fontweight='bold')
-    ax.grid(linestyle='--')
-    ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+        ax.axhline(cost_expected, ls="--", color="r")
+    ax.set_xlabel("num_iter", fontweight="bold")
+    ax.set_ylabel("cost", fontweight="bold")
+    ax.grid(linestyle="--")
+    ax.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
 
     ax = axes[0, 1]
-    ax.set_title('Gradient Descent')
+    ax.set_title("Gradient Descent")
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
-    ax.plot(x_train, y_grad_desc, label='Gradient Descent', linewidth=4.0)
-    ax.plot(x_train, y_lsq, label='LSQ estimator')
-    ax.plot(x_train, true_model(x_train), label='true model', linestyle='--')
-    ax.set_xlabel(r'$x_n$', fontweight='bold')
-    ax.set_ylabel(r'$y_n$', fontweight='bold')
-    ax.grid(linestyle='--')
+    ax.plot(x_train, y_grad_desc, label="Gradient Descent", linewidth=4.0)
+    ax.plot(x_train, y_lsq, label="LSQ estimator")
+    ax.plot(x_train, true_model(x_train), label="true model", linestyle="--")
+    ax.set_xlabel(r"$x_n$", fontweight="bold")
+    ax.set_ylabel(r"$y_n$", fontweight="bold")
+    ax.grid(linestyle="--")
     ax.legend()
 
     start = int(0)
@@ -201,24 +204,24 @@ if __name__ == '__main__':
     x_num_iter = np.linspace(start, stop, stop - start)
 
     ax = axes[1, 0]
-    ax.set_title('Cost for Barzilai-Borwein')
+    ax.set_title("Cost for Barzilai-Borwein")
     ax.plot(x_num_iter, cost_iter_bb[start::])
     if cost_expected is not None:
-        ax.axhline(cost_expected, ls='--', color='r')
-    ax.set_xlabel('num_iter', fontweight='bold')
-    ax.set_ylabel('cost', fontweight='bold')
-    ax.grid(linestyle='--')
-    ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+        ax.axhline(cost_expected, ls="--", color="r")
+    ax.set_xlabel("num_iter", fontweight="bold")
+    ax.set_ylabel("cost", fontweight="bold")
+    ax.grid(linestyle="--")
+    ax.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
 
     ax = axes[1, 1]
-    ax.set_title('Barzilai-Borwein')
+    ax.set_title("Barzilai-Borwein")
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
-    ax.plot(x_train, y_grad_bb, label='Barzilai Borwein', linewidth=4.0)
-    ax.plot(x_train, y_lsq, label='LSQ estimator')
-    ax.plot(x_train, true_model(x_train), label='true model', linestyle='--')
-    ax.set_xlabel(r'$x_n$', fontweight='bold')
-    ax.set_ylabel(r'$y_n$', fontweight='bold')
-    ax.grid(linestyle='--')
+    ax.plot(x_train, y_grad_bb, label="Barzilai Borwein", linewidth=4.0)
+    ax.plot(x_train, y_lsq, label="LSQ estimator")
+    ax.plot(x_train, true_model(x_train), label="true model", linestyle="--")
+    ax.set_xlabel(r"$x_n$", fontweight="bold")
+    ax.set_ylabel(r"$y_n$", fontweight="bold")
+    ax.grid(linestyle="--")
     ax.legend()
 
     plt.show()

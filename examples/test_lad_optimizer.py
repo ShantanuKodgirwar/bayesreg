@@ -1,10 +1,12 @@
 """
 Testing Least absolute deviations with scipy optimizers
 """
-import numpy as np
-import bayesian_linear_regression as reg
-import matplotlib.pyplot as plt
 import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import bayesreg as reg
 
 
 def calc_lad_bfgs(x, y, n_degree):
@@ -34,8 +36,7 @@ def calc_lad_bfgs(x, y, n_degree):
     return poly(x), cost_iter
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     # %% input parameters
     t = time.process_time()
 
@@ -47,9 +48,9 @@ if __name__ == '__main__':
 
     sigma = 0.2  # Gaussian noise parameter
 
-    cost_expected = n_samples * sigma ** 2 / 2.  # expected chi-squared n_samples
+    cost_expected = n_samples * sigma**2 / 2.0  # expected chi-squared n_samples
 
-    x_train = np.linspace(0., 1., n_samples)  # define training data input vector x
+    x_train = np.linspace(0.0, 1.0, n_samples)  # define training data input vector x
 
     # Gaussian training noise with a fixed seed value.
     noise_train = reg.NoiseModel(len(x_train)).gaussian_noise(sigma, seed=10)
@@ -61,8 +62,8 @@ if __name__ == '__main__':
     y_lad, cost_iter = calc_lad_bfgs(x_train, y_train, n_degree)
 
     # %% plot results
-    plt.rc('lines', lw=3)
-    plt.rc('font', weight='bold', size=12)
+    plt.rc("lines", lw=3)
+    plt.rc("font", weight="bold", size=12)
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
     # fig, ax = plt.subplots(figsize=(10, 10))
     plt.subplots_adjust(hspace=0.3)
@@ -72,23 +73,23 @@ if __name__ == '__main__':
     x_num_iter = np.linspace(start, stop, stop - start)
 
     ax = axes[0]
-    ax.set_title('Cost LAD (BFGS)')
+    ax.set_title("Cost LAD (BFGS)")
     ax.plot(x_num_iter, cost_iter[start::])
     if cost_expected is not None:
-        ax.axhline(cost_expected, ls='--', color='r')
-    ax.set_xlabel('num_iter', fontweight='bold')
-    ax.set_ylabel('cost', fontweight='bold')
-    ax.grid(linestyle='--')
-    ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+        ax.axhline(cost_expected, ls="--", color="r")
+    ax.set_xlabel("num_iter", fontweight="bold")
+    ax.set_ylabel("cost", fontweight="bold")
+    ax.grid(linestyle="--")
+    ax.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
 
     ax = axes[1]
-    ax.set_title('Least Absolute Deviations')
+    ax.set_title("Least Absolute Deviations")
     ax.scatter(x_train, y_train, s=100, alpha=0.7)
-    ax.plot(x_train, y_lad, label='LAD')
-    ax.plot(x_train, true_model(x_train), label='true model', linestyle='--')
-    ax.set_xlabel(r'$x_n$', fontweight='bold')
-    ax.set_ylabel(r'$y_n$', fontweight='bold')
-    ax.grid(linestyle='--')
+    ax.plot(x_train, y_lad, label="LAD")
+    ax.plot(x_train, true_model(x_train), label="true model", linestyle="--")
+    ax.set_xlabel(r"$x_n$", fontweight="bold")
+    ax.set_ylabel(r"$y_n$", fontweight="bold")
+    ax.grid(linestyle="--")
     ax.legend()
 
     plt.show()

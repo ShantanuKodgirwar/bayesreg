@@ -2,10 +2,12 @@
 Some basic tests of the functionality of the Polynomial class
 """
 import time
-import numpy as np
-import matplotlib.pyplot as plt
 import warnings
-import bayesian_linear_regression as reg
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import bayesreg as reg
 
 n_params = 20
 n_data = 1000
@@ -14,9 +16,9 @@ params = np.random.standard_normal(n_params) / np.arange(1, n_params + 1) ** 0.5
 
 model = reg.Polynomial(params)
 
-print(f'#params={len(model)}')
+print(f"#params={len(model)}")
 
-x = np.linspace(0., 1., n_data)
+x = np.linspace(0.0, 1.0, n_data)
 
 # specialized version
 t = time.process_time()
@@ -28,15 +30,15 @@ t2 = time.process_time()
 X2 = super(model.__class__, model).compute_design_matrix(x)
 t2 = time.process_time() - t2
 
-print('difference in design matrices:', np.fabs(X - X2).max())
-print('computation times: ', t, t2)
+print("difference in design matrices:", np.fabs(X - X2).max())
+print("computation times: ", t, t2)
 
 
 class PolyFitter(reg.LSQEstimator):
-
     def run(self, *args):
-        params = np.polyfit(self.cost.data.input, self.cost.data.output,
-                            len(self.cost.model) - 1)
+        params = np.polyfit(
+            self.cost.data.input, self.cost.data.output, len(self.cost.model) - 1
+        )
 
         warnings.simplefilter("ignore", np.RankWarning)
 
@@ -72,8 +74,7 @@ def fit_models(fitter, n_params, test_set=None):
         model.params = params
         train_error.append(reg.rmse(cost.data.output, model(cost.data.input)))
         if test_set is not None:
-            test_error.append(reg.rmse(test_set[:, 1],
-                                       model(test_set[:, 0])))
+            test_error.append(reg.rmse(test_set[:, 1], model(test_set[:, 0])))
 
     cost.model = original_model
 
@@ -91,13 +92,13 @@ true_model = reg.Sinc()
 
 n_params = 20
 n_data = 20
-x_range = (-1., 1.)
+x_range = (-1.0, 1.0)
 
 # generate a random model
 params = np.random.standard_normal(n_params) / np.arange(1, n_params + 1) ** 0.5
 model = reg.Polynomial(params)
 
-x = np.linspace(*(x_range + (n_data,))) * 10.
+x = np.linspace(*(x_range + (n_data,))) * 10.0
 y = true_model(x)
 
 dx = x[1] - x[0]
@@ -122,32 +123,32 @@ fitter2 = PolyFitter(lsq)
 theta = fitter.run()
 theta2 = fitter2.run()
 
-n_params_fitter = np.arange(1, 31, dtype='i')
+n_params_fitter = np.arange(1, 31, dtype="i")
 train_error, test_error = fit_models(fitter, n_params_fitter, test_set)
 train_error2, test_error2 = fit_models(fitter2, n_params_fitter, test_set)
 
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 ax[0].set_title(fitter.__class__.__name__)
-ax[0].plot(n_params_fitter, train_error, label='train')
-ax[0].plot(n_params_fitter, test_error, label='test')
+ax[0].plot(n_params_fitter, train_error, label="train")
+ax[0].plot(n_params_fitter, test_error, label="test")
 
 ax[1].set_title(fitter2.__class__.__name__)
-ax[1].plot(n_params_fitter, train_error2, label='train')
-ax[1].plot(n_params_fitter, test_error2, label='test')
+ax[1].plot(n_params_fitter, train_error2, label="train")
+ax[1].plot(n_params_fitter, test_error2, label="test")
 
 for a in ax:
-    a.set_ylim(-0.1, 1.)
+    a.set_ylim(-0.1, 1.0)
     a.legend()
 
 fig.tight_layout()
 
-print('polyfit vs our:', reg.rmse(params_true, theta))
-print('polyfit vs our:', reg.rmse(params_true, theta2))
+print("polyfit vs our:", reg.rmse(params_true, theta))
+print("polyfit vs our:", reg.rmse(params_true, theta2))
 
 plt.figure()
-plt.scatter(x, y, s=100, color='r', alpha=0.5)
-plt.plot(X, model(X), label='polynomial fit')
-plt.plot(X, Y, label='true model')
+plt.scatter(x, y, s=100, color="r", alpha=0.5)
+plt.plot(X, model(X), label="polynomial fit")
+plt.plot(X, Y, label="true model")
 plt.ylim(Y.min() * 1.1, Y.max() * 1.1)
 plt.legend()
 
