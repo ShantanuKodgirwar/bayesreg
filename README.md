@@ -19,7 +19,7 @@ This problem can also be solved analytically using the [**Moore-Penrose inverse*
 ## Bayesian Linear regression
 *TODO: Add details here*
 
-## Learning
+## Further learning
 
 * [**Regularizer**](https://en.wikipedia.org/wiki/Regularization_(mathematics)) to cope with [**overfitting**](https://en.wikipedia.org/wiki/Overfitting)
 
