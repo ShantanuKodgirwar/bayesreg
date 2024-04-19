@@ -17,13 +17,13 @@ This installs the package in a virtual environment and can be accessed with `poe
 Fitting a polynomial of degree $K$ to pairs $(x_n, y_n)$ such that the least-squares residual.
 
 $$
-\chi^2(w) = \sum_{n=1}^N [y_n - \Phi(x_n; w)]^2
+\chi^2(\Theta) = \sum_{n=1}^N [y_n - f(x_n; \Theta)]^2
 $$
 
-is minimized. Here, $\Phi(x; w)$ is a polynomial of degree $K$, i.e.
+is minimized. Here, $f(x; \Theta)$ is a polynomial of degree $K$, i.e.
 
 $$
-\Phi(x; w) = \sum_{k=0}^{K-1} w_k x^{k} = w_0 + w_1 x + w_2 x^2 + \ldots
+f(x; \Theta) = \sum_{k=0}^{K-1} \theta_k x^{k} = \theta_0 + \theta_1 x + \theta_2 x^2 + \ldots
 $$
 
 This problem can also be solved analytically using the [**Moore-Penrose inverse**](https://en.wikipedia.org/wiki/Moore-Penrose_inverse).
