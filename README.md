@@ -1,4 +1,16 @@
-The simplest problem to look into with linear regression is polynomial fitting. We look at this from the classical point of view followed by the Bayesian perspective.
+# bayesreg
+
+Just a repository for understanding the basics of Bayesian linear regression. Initially, we look at the classical linear regression applied to a polynomial fitting problem, which is followed by the Bayesian approach.
+
+## Installing dependencies
+
+Clone the repository and install the dependencies using the python package manager [poetry](https://github.com/python-poetry/poetry) as
+```bash
+git clone https://github.com/ShantanuKodgirwar/bayesreg.git
+cd bayesreg
+poetry install
+```
+This installs the package in a virtual environment and can be accessed with `poetry shell`.
 
 ## Linear regression
 
