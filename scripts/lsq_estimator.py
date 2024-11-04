@@ -1,12 +1,11 @@
 """
 Testing linear model (Ordinary Least Squares and Ridge Regression)
 """
-import math
 import unittest
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
