@@ -1,6 +1,6 @@
 # bayesreg
 
-Just a repository for understanding the basics of Bayesian linear regression. Initially, we look at the classical linear regression applied to a polynomial fitting problem, which is followed by the Bayesian approach.
+Just a repository for understanding the basics of Bayesian linear regression by applying it to a simple polynomial fitting problem.
 
 ## Installing dependencies
 
