@@ -8,7 +8,7 @@ Clone the repository and install the dependencies using the python package manag
 ```bash
 git clone https://github.com/ShantanuKodgirwar/bayesreg.git
 cd bayesreg
-poetry install
+poetry install --with dev --sync
 ```
 This installs the package in a virtual environment and can be accessed with `poetry shell`.
 
